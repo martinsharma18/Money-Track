@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import ConfirmModal from "@/components/ConfirmModal";
 
 export default function ProfilePage() {
-  const { user, settings, wallets, categories, updateUser, updateSettings, logout, addWallet, deleteWallet, addCategory, deleteCategory, hasHydrated } = useStore();
+  const { user, settings, wallets, categories, updateUser, updateSettings, logout, addWallet, updateWallet, deleteWallet, addCategory, deleteCategory, hasHydrated } = useStore();
   const [newWallet, setNewWallet] = useState("");
   const [newWalletIcon, setNewWalletIcon] = useState("💳");
   
@@ -113,20 +113,78 @@ export default function ProfilePage() {
                 )}
               </div>
               <p className="text-[10px] font-bold text-slate-400 truncate">{w.name}</p>
-              <p className="text-sm font-black text-slate-800">Rs {w.balance.toLocaleString()}</p>
+              {isManageMode ? (
+                <div className="mt-1 relative animate-fade-in">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">Rs</span>
+                  <input 
+                    type="number" 
+                    defaultValue={w.balance}
+                    onBlur={(e) => updateWallet(w.id, { balance: Number(e.target.value) || 0 })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-7 pr-2 py-1 text-xs font-black text-slate-800 outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              ) : (
+                <p className="text-sm font-black text-slate-800">Rs {w.balance.toLocaleString()}</p>
+              )}
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleAddWallet} className="bg-slate-50 p-2 rounded-2xl border border-dashed border-slate-200">
-          <p className="text-[9px] font-bold text-slate-400 uppercase px-1 mb-2">Add New Wallet</p>
-          <div className="flex gap-1.5 mb-1.5">
-            <input type="text" value={newWalletIcon} onChange={e => setNewWalletIcon(e.target.value)} className="w-10 h-10 bg-white border border-slate-100 rounded-xl text-center outline-none text-lg shadow-sm" maxLength={2} />
-            <input type="text" value={newWallet} onChange={e => setNewWallet(e.target.value)} placeholder="Name (e.g. eSewa)" className="flex-1 bg-white border border-slate-100 rounded-xl px-3 outline-none text-xs font-bold shadow-sm" />
+        <form onSubmit={handleAddWallet} className="bg-slate-50 p-3 rounded-[2rem] border-2 border-dashed border-slate-200">
+          <p className="text-[9px] font-black text-slate-400 uppercase px-1 mb-3 tracking-widest">Create New Wallet</p>
+          
+          {/* Icon Quick Picker */}
+          <div className="flex gap-2 mb-3 px-1 overflow-x-auto pb-1 custom-scrollbar">
+            {['💵', '💳', '🏦', '📱', '💰', '🪙', '📦', '🎁'].map(emoji => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => setNewWalletIcon(emoji)}
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all active:scale-90 shadow-sm",
+                  newWalletIcon === emoji ? "bg-primary text-white scale-110 shadow-primary/20" : "bg-white hover:bg-slate-100"
+                )}
+              >
+                {emoji}
+              </button>
+            ))}
           </div>
-          <div className="flex gap-1.5">
-            <input type="number" value={newWalletBalance} onChange={e => setNewWalletBalance(e.target.value)} placeholder="Initial Balance" className="flex-1 bg-white border border-slate-100 rounded-xl px-3 py-2 outline-none text-xs font-bold shadow-sm" />
-            <button type="submit" disabled={!newWallet} className="bg-primary text-white px-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md disabled:opacity-30">Add</button>
+
+          <div className="flex gap-2 mb-2">
+            <div className="relative group">
+               <input 
+                type="text" 
+                value={newWalletIcon} 
+                onChange={e => setNewWalletIcon(e.target.value)} 
+                className="w-12 h-12 bg-white border border-slate-200 rounded-2xl text-center outline-none text-xl shadow-lg shadow-slate-200/50 focus:border-primary transition-all" 
+                maxLength={2} 
+              />
+              <p className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-black text-slate-300">ICON</p>
+            </div>
+            <input 
+              type="text" 
+              value={newWallet} 
+              onChange={e => setNewWallet(e.target.value)} 
+              placeholder="Wallet Name (e.g. eSewa)" 
+              className="flex-1 bg-white border border-slate-200 rounded-2xl px-4 outline-none text-xs font-bold shadow-lg shadow-slate-200/50 focus:border-primary transition-all" 
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <input 
+              type="number" 
+              value={newWalletBalance} 
+              onChange={e => setNewWalletBalance(e.target.value)} 
+              placeholder="Starting Balance" 
+              className="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none text-xs font-bold shadow-lg shadow-slate-200/50 focus:border-primary transition-all" 
+            />
+            <button 
+              type="submit" 
+              disabled={!newWallet} 
+              className="bg-primary text-white px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-30 active:scale-95 transition-all"
+            >
+              CREATE
+            </button>
           </div>
         </form>
       </div>

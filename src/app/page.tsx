@@ -16,10 +16,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date());
 
   const monthBoundaries = useMemo(() => {
     let start, end;

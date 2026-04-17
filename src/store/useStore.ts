@@ -55,13 +55,18 @@ export const useStore = create<AppState>()(
       updateUser: (data) => set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
       updateSettings: (data) => set((state) => ({ settings: { ...state.settings, ...data } })),
       
-      addWallet: (wallet) => set((state) => ({ wallets: [...state.wallets, { ...wallet, id: uuidv4(), balance: 0 }] })),
+      addWallet: (wallet) => set((state) => ({ wallets: [...state.wallets, { ...wallet, id: uuidv4() }] })),
       updateWallet: (id, data) => set((state) => ({ wallets: state.wallets.map(w => w.id === id ? { ...w, ...data } : w) })),
       deleteWallet: (id) => set((state) => ({ wallets: state.wallets.filter(w => w.id !== id) })),
       
-      addCategory: (category) => set((state) => ({ categories: [...state.categories, { ...category, id: uuidv4(), isCustom: true }] })),
+      addCategory: (category) => set((state) => ({ categories: [...state.categories, { ...category, id: uuidv4(), isCustom: true, order: state.categories.length }] })),
       updateCategory: (id, data) => set((state) => ({ categories: state.categories.map(c => c.id === id ? { ...c, ...data } : c) })),
       deleteCategory: (id) => set((state) => ({ categories: state.categories.filter(c => c.id !== id) })),
+      reorderCategories: (type, orderedTxs) => set((state) => {
+        const otherTypeTxs = state.categories.filter(c => c.type !== type);
+        const updatedOrdered = orderedTxs.map((c, i) => ({ ...c, order: i }));
+        return { categories: [...otherTypeTxs, ...updatedOrdered] };
+      }),
       
       addTransaction: (transaction) => set((state) => {
         const newTransaction = { ...transaction, id: uuidv4() };

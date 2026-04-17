@@ -109,35 +109,35 @@ export default function StatsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-lg mx-auto pb-32 animate-fade-in custom-scrollbar">
-      <h1 className="text-2xl font-bold font-sans mb-2">Analytics</h1>
+    <div className="p-3 sm:p-6 space-y-4 max-w-lg mx-auto pb-32 animate-fade-in custom-scrollbar">
+      <h1 className="text-xl font-bold font-sans px-1">Analytics</h1>
       
       {/* Toggle */}
-      <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full max-w-xs mx-auto">
+      <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs mx-auto">
         <button
           onClick={() => setView('MONTHLY')}
-          className={cn("flex-1 py-1.5 text-sm font-medium rounded-lg transition-all", view === 'MONTHLY' ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-slate-500")}
+          className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", view === 'MONTHLY' ? "bg-white shadow-sm text-primary" : "text-slate-500")}
         >
           Monthly
         </button>
         <button
           onClick={() => setView('WEEKLY')}
-          className={cn("flex-1 py-1.5 text-sm font-medium rounded-lg transition-all", view === 'WEEKLY' ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-slate-500")}
+          className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", view === 'WEEKLY' ? "bg-white shadow-sm text-primary" : "text-slate-500")}
         >
           Weekly
         </button>
       </div>
 
       {view === 'MONTHLY' ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Bar Chart */}
-          <div className="bg-card rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h3 className="font-bold mb-4">Income vs Expense (6 Months)</h3>
-            <div className="h-64 w-full">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <h3 className="text-xs font-bold mb-4 uppercase tracking-wider text-slate-400">Income vs Expense</h3>
+            <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" fontSize={12} axisLine={false} tickLine={false} />
-                  <YAxis fontSize={12} axisLine={false} tickLine={false} tickFormatter={(val) => `Rs${val}`} />
+                <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -30, bottom: 0 }}>
+                  <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="income" name="Income" fill="var(--income)" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expense" name="Expense" fill="var(--expense)" radius={[4, 4, 0, 0]} />
@@ -147,39 +147,39 @@ export default function StatsPage() {
           </div>
 
           {/* Pie Chart */}
-          <div className="bg-card rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h3 className="font-bold mb-4">Expense Breakdown (This Month)</h3>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <h3 className="text-xs font-bold mb-4 uppercase tracking-wider text-slate-400">Expense Breakdown</h3>
             {pieData.length > 0 ? (
-              <div className="h-64 w-full">
+              <div className="h-56 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={5}>
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-center text-slate-500 py-10">No expenses this month</p>
+              <p className="text-center text-slate-400 py-10 text-xs font-medium">No expenses yet</p>
             )}
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Line Chart */}
-          <div className="bg-card rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h3 className="font-bold mb-4">Daily Spending (This Week)</h3>
-            <div className="h-64 w-full">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <h3 className="text-xs font-bold mb-4 uppercase tracking-wider text-slate-400">Daily Spending</h3>
+            <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" fontSize={12} axisLine={false} tickLine={false} />
-                  <YAxis fontSize={12} axisLine={false} tickLine={false} />
+                <LineChart data={weeklyData} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
+                  <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="expense" name="Expense" stroke="var(--expense)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="expense" name="Expense" stroke="var(--expense)" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

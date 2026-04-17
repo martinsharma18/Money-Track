@@ -1,4 +1,3 @@
-// @ts-ignore
 import bs from 'bikram-sambat';
 
 export const BS_MONTHS = [
@@ -55,4 +54,28 @@ export const getPeriodDates = (period: 'this_month' | 'this_week', date: Date = 
   }
 
   return { start, end };
+};
+
+export const formatMonthAndYear = (date: Date, mode: 'BS' | 'AD'): string => {
+  if (mode === 'BS') {
+    const bsDate = bs.toBik(date);
+    if (bsDate) {
+      return `${BS_MONTHS[bsDate.month - 1]} ${bsDate.year}`;
+    }
+  }
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
+export const addMonths = (date: Date, dir: number, mode: 'BS' | 'AD'): Date => {
+  if (mode === 'AD') {
+    return new Date(date.getFullYear(), date.getMonth() + dir, 1);
+  } else {
+    const bsDate = bs.toBik(date);
+    let nm = bsDate.month + dir;
+    let ny = bsDate.year;
+    while (nm > 12) { nm -= 12; ny++; }
+    while (nm < 1) { nm += 12; ny--; }
+    const res = bs.toGreg(ny, nm, 1);
+    return new Date(res.year, res.month - 1, res.day);
+  }
 };

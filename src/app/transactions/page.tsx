@@ -6,11 +6,13 @@ import { Search, Trash2, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/utils/cn";
 import { Transaction } from "@/types";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function TransactionsPage() {
   const { transactions, categories, wallets, settings, deleteTransaction, hasHydrated } = useStore();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
+  const [txToDelete, setTxToDelete] = useState<string | null>(null);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
@@ -28,50 +30,58 @@ export default function TransactionsPage() {
   if (!hasHydrated) return null;
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-lg mx-auto pb-32 animate-fade-in custom-scrollbar">
-      <h1 className="text-2xl font-bold font-sans">All Transactions</h1>
+    <div className="p-3 sm:p-6 space-y-4 max-w-lg mx-auto pb-32 animate-fade-in custom-scrollbar">
+      <h1 className="text-xl font-bold font-sans px-1">Transactions</h1>
       
       {/* Search & Filter */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
           <input
             type="text"
-            placeholder="Search notes or categories..."
+            placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-primary transition-colors"
+            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:border-primary transition-colors"
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 px-0.5">
           {(['ALL', 'EXPENSE', 'INCOME'] as const).map(f => (
             <button
               key={f}
               onClick={() => setTypeFilter(f)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                "px-3 py-1 rounded-full text-[10px] font-bold transition-colors uppercase tracking-wider",
                 typeFilter === f 
-                  ? "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900" 
-                  : "bg-card border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                  ? "bg-primary text-white" 
+                  : "bg-white border border-slate-100 text-slate-500"
               )}
             >
-              {f.charAt(0) + f.slice(1).toLowerCase()}
+              {f === 'ALL' ? 'Everything' : f}
             </button>
           ))}
         </div>
       </div>
 
       {/* List */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredTransactions.length === 0 ? (
-          <p className="text-center text-slate-500 py-10">No transactions found</p>
+          <p className="text-center text-slate-400 py-10 text-xs">No transactions found</p>
         ) : (
           filteredTransactions.map(t => (
-            <TransactionCard key={t.id} transaction={t} onDelete={() => deleteTransaction(t.id)} />
+            <TransactionCard key={t.id} transaction={t} onDelete={() => setTxToDelete(t.id)} />
           ))
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!txToDelete}
+        onClose={() => setTxToDelete(null)}
+        onConfirm={() => txToDelete && deleteTransaction(txToDelete)}
+        title="Delete Transaction?"
+        message="Are you sure you want to remove this record? This will also revert the balance change in your wallet."
+      />
     </div>
   );
 }
@@ -82,48 +92,35 @@ function TransactionCard({ transaction: t, onDelete }: { transaction: Transactio
   const wallet = wallets.find(w => w.id === t.walletId);
   const isInc = t.type === 'INCOME';
 
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
   return (
     <div 
-      className="bg-card rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4 group hover:border-slate-200 transition-colors"
+      className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex items-center gap-3 active:scale-[0.98] transition-all"
+      onClick={() => openAddSheet(t.id)}
     >
-      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0", isInc ? "bg-green-50 dark:bg-green-950/30" : "bg-orange-50 dark:bg-orange-950/30")}>
+      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0", isInc ? "bg-green-50" : "bg-orange-50")}>
         {category?.icon || '💰'}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-foreground truncate">{category?.name || 'Unknown'}</p>
-        <p className="text-sm text-slate-500 truncate">{t.note || 'No note'}</p>
-        <p className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1">
-          <span>{wallet?.icon} {wallet?.name}</span>
-          <span className="opacity-50">•</span>
-          <span>{formatDisplayDate(t.date, settings.dateDisplay)}</span>
-        </p>
+        <p className="font-bold text-sm text-foreground/80 truncate">{category?.name || 'Unknown'}</p>
+        <div className="flex items-center gap-1.5 truncate">
+          <p className="text-[10px] text-slate-400 flex items-center gap-1">
+            <span>{wallet?.icon} {wallet?.name}</span>
+          </p>
+          <span className="text-[10px] text-slate-200">•</span>
+          <p className="text-[10px] text-slate-400 font-medium truncate">{t.note || 'No note'}</p>
+        </div>
       </div>
-      <div className="text-right shrink-0 flex flex-col items-end justify-between h-full">
-        <p className={cn("font-bold", isInc ? "text-income" : "text-expense")}>
-          {isInc ? '+' : '-'}Rs {t.amount.toLocaleString()}
+      <div className="text-right shrink-0 flex flex-col items-end justify-between self-stretch">
+        <p className={cn("font-bold text-sm", isInc ? "text-income/90" : "text-expense/90")}>
+          {isInc ? '+' : '-'} {t.amount.toLocaleString()}
         </p>
-        <button
-          onClick={(e) => { e.stopPropagation(); openAddSheet(t.id); }}
-          className="inline-flex items-center gap-0.5 text-[10px] text-primary mt-0.5 hover:underline"
-        >
-          <Pencil size={10} /> edit
-        </button>
         
-        {confirmDelete ? (
-           <div className="flex gap-2 mt-2" onClick={e => e.stopPropagation()}>
-             <button onClick={() => setConfirmDelete(false)} className="text-xs text-slate-500 px-2 py-1">Cancel</button>
-             <button onClick={onDelete} className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">Confirm</button>
-           </div>
-        ) : (
-          <button 
-            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }} 
-            className="flex items-center gap-0.5 text-[10px] text-red-500 mt-0.5 hover:text-red-700"
-          >
-            <Trash2 size={10} /> delete
-          </button>
-        )}
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+          className="text-slate-200 hover:text-red-500 transition-colors"
+        >
+          <Trash2 size={12} />
+        </button>
       </div>
     </div>
   );

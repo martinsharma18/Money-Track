@@ -20,6 +20,7 @@ export interface Category {
   name: string;
   icon: string;
   isCustom: boolean;
+  order?: number;
 }
 
 export interface Transaction {
@@ -62,6 +63,7 @@ export interface AppState {
   addCategory: (category: Omit<Category, 'id' | 'isCustom'>) => void;
   updateCategory: (id: string, data: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
+  reorderCategories: (type: TransactionType, categories: Category[]) => void;
   
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (id: string, data: Partial<Transaction>) => void;

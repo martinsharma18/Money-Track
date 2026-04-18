@@ -6,16 +6,23 @@ import { Search, Trash2, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/utils/cn";
 import { Transaction } from "@/types";
+import { usePeriodView } from "@/hooks/usePeriodView";
 import ConfirmModal from "@/components/ConfirmModal";
 
 export default function TransactionsPage() {
   const { transactions, categories, wallets, settings, deleteTransaction, hasHydrated } = useStore();
+  const { monthName, monthBoundaries } = usePeriodView();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
 
   const filteredTransactions = useMemo(() => {
+    const { start, end } = monthBoundaries;
     return transactions.filter(t => {
+      const d = new Date(t.date);
+      const matchesMonth = d >= start && d <= end;
+      if (!matchesMonth) return false;
+
       const cat = categories.find(c => c.id === t.categoryId);
       const matchesSearch = 
         (t.note?.toLowerCase().includes(search.toLowerCase())) || 
@@ -25,7 +32,7 @@ export default function TransactionsPage() {
       
       return matchesSearch && matchesType;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, search, typeFilter, categories]);
+  }, [transactions, search, typeFilter, categories, monthBoundaries]);
 
   if (!hasHydrated) return null;
 

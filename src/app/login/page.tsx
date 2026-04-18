@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
-import { Wallet, Mail, Lock, User, ArrowRight, TrendingUp } from "lucide-react";
+import { Wallet, Mail, Lock, User, ArrowRight, TrendingUp, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -100,13 +101,26 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none transition-all"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl py-3 pl-12 pr-12 text-sm font-bold outline-none transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
+            </div>
+            
+            <div className="flex justify-end -mt-2">
+              <Link href="/forgot-password" className="text-[11px] font-bold text-primary hover:underline">
+                Forgot password?
+              </Link>
             </div>
 
             <div className="pt-2">

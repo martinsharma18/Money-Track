@@ -51,8 +51,14 @@ export const useStore = create<AppState>()(
       
       isAddSheetOpen: false,
       editingTransactionId: null,
+      selectedMonthIso: new Date().toISOString(),
+      searchQuery: '',
+      isSearchOpen: false,
       openAddSheet: (id) => set({ isAddSheetOpen: true, editingTransactionId: id || null }),
       closeAddSheet: () => set({ isAddSheetOpen: false, editingTransactionId: null }),
+      setSelectedMonthIso: (iso) => set({ selectedMonthIso: iso }),
+      setSearchQuery: (searchQuery) => set({ searchQuery }),
+      setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen }),
       
       setHasHydrated: (state) => set({ hasHydrated: state }),
 

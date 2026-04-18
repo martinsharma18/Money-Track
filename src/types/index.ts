@@ -47,8 +47,14 @@ export interface AppState {
   // UI State
   isAddSheetOpen: boolean;
   editingTransactionId: string | null;
+  selectedMonthIso: string;
+  searchQuery: string;
+  isSearchOpen: boolean;
   openAddSheet: (transactionId?: string) => void;
   closeAddSheet: () => void;
+  setSelectedMonthIso: (iso: string) => void;
+  setSearchQuery: (query: string) => void;
+  setIsSearchOpen: (isOpen: boolean) => void;
   
   // Actions
   login: (user: User) => void;

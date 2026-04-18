@@ -2,12 +2,14 @@
 
 import { useStore } from "@/store/useStore";
 import { formatDisplayDate, getMonthName } from "@/utils/date";
+import { usePeriodView } from "@/hooks/usePeriodView";
 import { useMemo, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { cn } from "@/utils/cn";
 
 export default function StatsPage() {
   const { transactions, categories, settings, hasHydrated } = useStore();
+  const { monthBoundaries } = usePeriodView();
   const [view, setView] = useState<'MONTHLY' | 'WEEKLY'>('MONTHLY');
 
   const { monthlyData, pieData, weeklyData } = useMemo(() => {
@@ -26,8 +28,8 @@ export default function StatsPage() {
       });
     }
 
-    // Pie Data (This Month Expenses)
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    // Pie Data (Selected Month Expenses)
+    const { start: startOfMonth, end: endOfMonth } = monthBoundaries;
     const categoryTotals = new Map<string, { value: number, name: string, color: string }>();
 
     // Weekly Data (Daily spending this week)
@@ -59,8 +61,8 @@ export default function StatsPage() {
         else m.expense += t.amount;
       }
 
-      // This Month Pie
-      if (d >= startOfMonth && t.type === 'EXPENSE') {
+      // This Month Pie (now uses Period View selection)
+      if (d >= startOfMonth && d <= endOfMonth && t.type === 'EXPENSE') {
         const c = categories.find(cat => cat.id === t.categoryId);
         if (c) {
           if (!categoryTotals.has(c.id)) {
@@ -88,7 +90,7 @@ export default function StatsPage() {
       pieData: finalPieData.sort((a, b) => b.value - a.value),
       weeklyData: Array.from(weeklyMap.values()),
     };
-  }, [transactions, categories, settings.dateDisplay]);
+  }, [transactions, categories, settings.dateDisplay, monthBoundaries]);
 
   if (!hasHydrated) return null;
 

@@ -53,7 +53,7 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {Object.entries(
                 filteredTransactions
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -68,19 +68,39 @@ export default function Home() {
                 const d = new Date(date);
                 const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
 
+                const dailyIncome = txs.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0);
+
                 return (
-                  <div key={date} className="space-y-2">
-                    <div className="flex justify-between items-center px-2">
+                  <div key={date}>
+                    {/* Date Header */}
+                    <div className="flex justify-between items-center px-1 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-black text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{formatDisplayDate(date, settings.dateDisplay)}</span>
+                        <span className="text-[11px] font-black text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">{formatDisplayDate(date, settings.dateDisplay)}</span>
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{dayName}</span>
                       </div>
-                      {dailyExpense > 0 && (
-                        <span className="text-[10px] font-black text-slate-400">Total: Rs {dailyExpense.toLocaleString()}</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {dailyIncome > 0 && (
+                          <span className="text-[10px] font-black text-emerald-500">+{dailyIncome.toLocaleString()}</span>
+                        )}
+                        {dailyIncome > 0 && dailyExpense > 0 && (
+                          <span className="text-[10px] font-bold text-slate-300">|</span>
+                        )}
+                        {dailyExpense > 0 && (
+                          <span className="text-[10px] font-black text-rose-400">-{dailyExpense.toLocaleString()}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-50">
-                      {txs.map(t => <TransactionItem key={t.id} transaction={t} />)}
+
+                    {/* Transactions */}
+                    <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100">
+                      {txs.map((t, i) => (
+                        <div key={t.id}>
+                          <TransactionItem transaction={t} />
+                          {i < txs.length - 1 && (
+                            <div className="mx-4 h-px bg-slate-100" />
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
@@ -101,7 +121,7 @@ function TransactionItem({ transaction: t }: { transaction: Transaction }) {
   return (
     <div 
       onClick={() => openAddSheet(t.id)}
-      className="flex items-center justify-between p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+      className="flex items-center justify-between p-4 hover:bg-slate-50/60 transition-colors cursor-pointer"
     >
       <div className="flex items-center gap-4">
         <div className={cn(

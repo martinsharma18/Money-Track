@@ -99,7 +99,7 @@ function SortableCategoryItem({
 }
 
 export default function AddTransactionSheet() {
-  const { categories, wallets, addTransaction, updateTransaction, deleteCategory, reorderCategories, transactions, isAddSheetOpen: isOpen, closeAddSheet: onClose, editingTransactionId } = useStore();
+  const { categories, wallets, addTransaction, updateTransaction, deleteTransaction, deleteCategory, reorderCategories, transactions, isAddSheetOpen: isOpen, closeAddSheet: onClose, editingTransactionId } = useStore();
   
   const [type, setType] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
   const [amount, setAmount] = useState('');
@@ -109,6 +109,7 @@ export default function AddTransactionSheet() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isManageMode, setIsManageMode] = useState(false);
 
   const sensors = useSensors(
@@ -454,12 +455,21 @@ export default function AddTransactionSheet() {
         </div>
 
         {/* Footer - Fixed & Slim */}
-        <div className="p-3 border-t border-slate-100 bg-white">
+        <div className="p-3 border-t border-slate-100 bg-white flex gap-2">
+          {editingTransactionId && (
+            <button
+              type="button"
+              onClick={() => setTransactionToDelete(editingTransactionId)}
+              className="px-4 py-3 rounded-xl bg-orange-100 text-orange-600 font-black shadow-sm active:scale-95 transition-all text-sm flex items-center justify-center"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
           <button
             type="submit"
             form="add-tx-form"
             className={cn(
-              "w-full py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
+              "flex-1 py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
               type === 'EXPENSE' ? "bg-expense shadow-orange-200" : "bg-income shadow-green-200"
             )}
           >
@@ -480,6 +490,20 @@ export default function AddTransactionSheet() {
         }}
         title="Delete Category?"
         message="Are you sure you want to delete this category? Any transactions using this category will still exist but without a category name."
+      />
+
+      <ConfirmModal
+        isOpen={!!transactionToDelete}
+        onClose={() => setTransactionToDelete(null)}
+        onConfirm={() => {
+          if (transactionToDelete) {
+            deleteTransaction(transactionToDelete);
+            setTransactionToDelete(null);
+            onClose();
+          }
+        }}
+        title="Delete Transaction?"
+        message="Are you sure you want to permanently delete this transaction? Your balance will be updated automatically."
       />
     </div>
   );

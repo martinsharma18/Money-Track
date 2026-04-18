@@ -13,10 +13,7 @@ export default function GlobalHeader() {
   const { user, wallets, transactions, settings, isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } = useStore();
   const { monthName, monthBoundaries, changeMonth } = usePeriodView();
   const [scrolled, setScrolled] = useState(false);
-  
   const pathname = usePathname();
-  // Don't show header on profile page
-  if (pathname === '/profile') return null;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 80);
@@ -38,6 +35,9 @@ export default function GlobalHeader() {
     });
     return { totalBalance: bal, income: inc, expense: exp };
   }, [wallets, transactions, monthBoundaries]);
+
+  // Early return must happen AFTER all hooks
+  if (pathname === '/profile') return null;
 
   return (
     <div className="sticky top-0 z-45 transition-all duration-300 px-0 py-0 pb-4 rounded-b-4xl rounded-[1rem] mt- -4 max-w-lg mx-auto">

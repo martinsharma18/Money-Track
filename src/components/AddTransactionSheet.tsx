@@ -251,7 +251,7 @@ export default function AddTransactionSheet() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
-      <div className="bg-card w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-xl h-[85vh] sm:h-auto sm:max-h-[90vh] flex flex-col animate-slide-up">
+      <div className="bg-card w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-xl max-h-[95vh] flex flex-col animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-slate-100">
           <h2 className="text-base font-bold">{editingTransactionId ? 'Edit' : 'New Transaction'}</h2>

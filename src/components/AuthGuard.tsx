@@ -1,47 +1,45 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
-import { useState } from "react";
-import { Wallet } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, login, hasHydrated } = useStore();
-  const [name, setName] = useState("");
+  const { user, hasHydrated, fetchInitialData } = useStore();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  if (!hasHydrated) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
-  if (!user) {
+  useEffect(() => {
+    if (hasHydrated && !user && !isAuthPage) {
+      router.replace("/login");
+    }
+    
+    if (hasHydrated && user) {
+      fetchInitialData();
+    }
+  }, [user, hasHydrated, isAuthPage, router, fetchInitialData]);
+
+  if (!hasHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 absolute inset-0 z-50">
-        <div className="bg-card w-full max-w-sm rounded-3xl p-8 shadow-xl text-center space-y-6">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-            <Wallet size={40} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold font-sans">Money Track</h1>
-            <p className="text-slate-500 mt-2">Your mobile-first personal finance tracker</p>
-          </div>
-          
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (name.trim()) login({ id: 'u1', name: name.trim(), email: '' });
-          }} className="space-y-4 pt-4">
-            <input 
-              type="text" 
-              placeholder="What's your name?" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary border-2 border-transparent"
-              required
-            />
-            <button type="submit" className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors">
-              Get Started
-            </button>
-          </form>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hydrating Session</p>
         </div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  // If on Login/Register and user exists, RootLayout will handle the visual but this prevents flashing
+  if (user && isAuthPage) return null;
+
+  // Render children if authenticated or on an auth page
+  if (user || isAuthPage) {
+    return <>{children}</>;
+  }
+
+  // Fallback while redirecting
+  return null;
 }

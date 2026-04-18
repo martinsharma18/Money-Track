@@ -1,0 +1,73 @@
+/*
+  SUPABASE DATABASE SCHEMA
+  Run this in your Supabase SQL Editor to prepare your database.
+*/
+
+-- 1. Create Wallets Table
+CREATE TABLE wallets (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  balance DECIMAL(15, 2) DEFAULT 0.00,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Create Categories Table
+CREATE TABLE categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- NULL for default categories
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  type TEXT CHECK (type IN ('INCOME', 'EXPENSE')) NOT NULL,
+  is_custom BOOLEAN DEFAULT TRUE,
+  "order" INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 3. Create Transactions Table
+CREATE TABLE transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  wallet_id UUID REFERENCES wallets(id) ON DELETE CASCADE NOT NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+  amount DECIMAL(15, 2) NOT NULL,
+  type TEXT CHECK (type IN ('INCOME', 'EXPENSE')) NOT NULL,
+  date TIMESTAMP WITH TIME ZONE NOT NULL,
+  note TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 4. Set up Row Level Security (RLS)
+ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+
+-- 5. Create Policies (Users can only see/edit their own data)
+
+-- Wallets Policies
+CREATE POLICY "Users can manage their own wallets" 
+ON wallets FOR ALL 
+USING (auth.uid() = user_id);
+
+-- Categories Policies
+CREATE POLICY "Users can see default and their own categories" 
+ON categories FOR SELECT 
+USING (user_id IS NULL OR auth.uid() = user_id);
+
+CREATE POLICY "Users can manage their own categories" 
+ON categories FOR ALL 
+USING (auth.uid() = user_id);
+
+-- Transactions Policies
+CREATE POLICY "Users can manage their own transactions" 
+ON transactions FOR ALL 
+USING (auth.uid() = user_id);
+
+-- 6. Insert Default Categories (Optional)
+INSERT INTO categories (name, icon, type, is_custom, "order") VALUES
+('Salary', '💼', 'INCOME', false, 0),
+('Freelance', '💻', 'INCOME', false, 1),
+('Food', '🍔', 'EXPENSE', false, 0),
+('Rent', '🏠', 'EXPENSE', false, 1),
+('Transport', '🚌', 'EXPENSE', false, 2);

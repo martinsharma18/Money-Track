@@ -71,4 +71,5 @@ export interface AppState {
   
   hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
+  fetchInitialData: () => Promise<void>;
 }

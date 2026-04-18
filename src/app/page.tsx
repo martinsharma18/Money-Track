@@ -15,7 +15,7 @@ export default function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  
+
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
 
   const monthBoundaries = useMemo(() => {
@@ -87,57 +87,53 @@ export default function Home() {
 
   return (
     <div className="animate-fade-in custom-scrollbar min-h-screen bg-white">
-      {/* Integrated Blue Premium Header */}
-      <div className={cn(
-        "sticky top-0 z-40 transition-all duration-300",
-        scrolled ? "p-0" : "p-4"
-      )}>
+      {/* Rectangular Compact Blue Header */}
+      <div className="sticky top-0 z-45 transition-all duration-300  px-0 py-0 pb-4 rounded-b-4xl rounded-[1rem]  mt- -4">
         <div className={cn(
           "shadow-2xl transition-all duration-500 overflow-hidden relative",
           "bg-gradient-to-br from-[var(--header-from)] via-[var(--header-via)] to-[var(--header-to)]",
-          scrolled ? "rounded-none px-5 py-3 pb-5" : "rounded-[2rem] px-5 py-5 pb-6"
+          scrolled ? "px-4 py-2 pb-4 rounded-[1rem] " : "px-4 py-4 pb-5  rounded-[1rem]"
         )}>
           {/* Multi-layered premium glows */}
           <div className="absolute -top-32 -right-32 w-96 h-96 bg-cyan-400/20 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
           <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-blue-500/30 rounded-full blur-[100px] pointer-events-none"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
 
           {/* Top Row: Navigation & Search */}
-          <div className="flex justify-between items-center mb-4 relative z-10">
+          <div className="flex justify-between items-center mb-3 relative z-10">
             <div className="flex flex-col">
-              <p className="text-[9px] font-black text-white/50 uppercase tracking-widest mb-1 ml-1">View Focus</p>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/20 px-2.5 py-1.5 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
-                  <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
-                    <ChevronLeft size={14} className="text-white/80" />
-                  </button>
-                  <h1 className="text-[11px] font-black min-w-[80px] text-center text-white tracking-tight">
-                    {monthName}
-                  </h1>
-                  <button onClick={() => changeMonth(1)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
-                    <ChevronRight size={14} className="text-white/80" />
-                  </button>
+              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Period View</p>
+              <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/15 px-2 py-1 rounded-lg">
+                <button onClick={() => changeMonth(-1)} className="p-0.5 hover:bg-white/10 rounded-md transition-colors">
+                  <ChevronLeft size={14} className="text-white/70" />
+                </button>
+                <h1 className="text-[10px] font-black min-w-[75px] text-center text-white tracking-tight">
+                  {monthName}
+                </h1>
+                <button onClick={() => changeMonth(1)} className="p-0.5 hover:bg-white/10 rounded-md transition-colors">
+                  <ChevronRight size={14} className="text-white/70" />
+                </button>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95">
-                <Search size={18} />
+
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95">
+                <Search size={16} />
               </button>
-              <button onClick={() => setIsCalendarOpen(true)} className="p-2.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95">
-                <CalendarIcon size={18} />
+              <button onClick={() => setIsCalendarOpen(true)} className="p-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95">
+                <CalendarIcon size={16} />
               </button>
-              <Link href="/profile" className="p-0.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl active:scale-90 transition-all overflow-hidden flex items-center justify-center shadow-lg">
-                 <div className="w-9 h-9 bg-white rounded-[10px] p-0.5 shadow-inner flex items-center justify-center overflow-hidden border border-white/20">
-                   {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover rounded-[8px]" /> : <User size={18} className="text-slate-300" />}
-                 </div>
+              <Link href="/profile" className="p-0.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl active:scale-90 transition-all overflow-hidden flex items-center justify-center">
+                <div className="w-8 h-8 bg-white rounded-lg p-0.5 shadow-inner flex items-center justify-center overflow-hidden">
+                  {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover rounded-[10px]" /> : <User size={16} className="text-slate-300" />}
+                </div>
               </Link>
             </div>
           </div>
 
-          {/* Floating Balance Card with Enhanced Depth */}
+          {/* Floating Balance Card - Very Compact */}
           <div className={cn(
-            "bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-2xl shadow-primary-dark/40 flex items-center divide-x divide-slate-100/50 relative z-10 transition-all duration-300 border border-white/40",
-            scrolled ? "p-2 px-3" : ""
+            "bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-2xl shadow-primary-dark/40 flex items-center divide-x divide-slate-100/50 relative z-10 transition-all duration-300 border border-white/40",
+            scrolled ? "p-1.5 px-3" : ""
           )}>
             <div className="flex-1 pr-3">
               <p className="text-[8px] font-black text-slate-400 uppercase leading-none mb-1">Total Balance</p>
@@ -167,7 +163,7 @@ export default function Home() {
           <div className="mt-2 mx-4 bg-white/95 backdrop-blur-md border border-slate-100 rounded-2xl p-2 shadow-2xl animate-slide-down relative z-30">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input 
+              <input
                 type="text"
                 autoFocus
                 placeholder="Search category or notes..."
@@ -197,11 +193,11 @@ export default function Home() {
               <span className="text-[10px] font-bold text-slate-400">{filteredTransactions.length} found</span>
             )}
           </div>
-          
+
           {filteredTransactions.length === 0 ? (
             <div className="text-center py-16 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-100 overflow-hidden relative">
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none grayscale">
-                 <Wallet size={200} />
+                <Wallet size={200} />
               </div>
               <div className="bg-white w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm relative z-10">
                 <Clock className="text-slate-200" size={24} />
@@ -225,7 +221,7 @@ export default function Home() {
                 const dailyExpense = txs.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0);
                 const d = new Date(date);
                 const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-                
+
                 return (
                   <div key={date} className="space-y-2">
                     <div className="flex justify-between items-center px-2">
@@ -247,14 +243,14 @@ export default function Home() {
           )}
         </div>
       </div>
-      
-      <CalendarModal 
-        isOpen={isCalendarOpen} 
-        onClose={() => setIsCalendarOpen(false)} 
-        month={selectedMonth} 
+
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        month={selectedMonth}
         transactions={transactions}
       />
-      
+
       <div className="h-28"></div>
     </div>
   );
@@ -301,7 +297,7 @@ function CalendarModal({ isOpen, onClose, month, transactions }: { isOpen: boole
   const monthIdx = month.getMonth();
   const firstDay = new Date(year, monthIdx, 1).getDay();
   const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-  
+
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
 
@@ -323,7 +319,7 @@ function CalendarModal({ isOpen, onClose, month, transactions }: { isOpen: boole
           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Calendar Review</p>
           <h2 className="text-xl font-black">{month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
         </div>
-        
+
         <div className="p-4 bg-white">
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
@@ -343,29 +339,29 @@ function CalendarModal({ isOpen, onClose, month, transactions }: { isOpen: boole
               );
             })}
           </div>
-          
+
           <div className="mt-4 flex items-center justify-around bg-slate-50 p-4 rounded-2xl border border-slate-100">
-             <div className="text-center">
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Daily In</p>
-                <div className="flex items-center gap-1 justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span className="text-xs font-black text-slate-800">Green</span>
-                </div>
-             </div>
-             <div className="text-center">
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Daily Out</p>
-                <div className="flex items-center gap-1 justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                  <span className="text-xs font-black text-slate-800">Orange</span>
-                </div>
-             </div>
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase">Daily In</p>
+              <div className="flex items-center gap-1 justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-xs font-black text-slate-800">Green</span>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase">Daily Out</p>
+              <div className="flex items-center gap-1 justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                <span className="text-xs font-black text-slate-800">Orange</span>
+              </div>
+            </div>
           </div>
         </div>
-        
+
         <div className="p-4 border-t border-slate-50">
-           <button onClick={onClose} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm active:scale-95 transition-transform">
-             CLOSE VIEW
-           </button>
+          <button onClick={onClose} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm active:scale-95 transition-transform">
+            CLOSE VIEW
+          </button>
         </div>
       </div>
     </div>

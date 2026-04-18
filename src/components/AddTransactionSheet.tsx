@@ -253,36 +253,36 @@ export default function AddTransactionSheet() {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
       <div className="bg-card w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-xl h-[85vh] sm:h-auto sm:max-h-[90vh] flex flex-col animate-slide-up">
         {/* Header */}
-        <div className="flex items-center justify-between p-2 px-3 border-b border-slate-100">
-          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">{editingTransactionId ? 'Edit' : 'New Transaction'}</h2>
-          <button onClick={onClose} className="p-1.5 bg-slate-50 text-slate-400 rounded-lg">
-            <X size={16} />
+        <div className="flex items-center justify-between p-3 border-b border-slate-100">
+          <h2 className="text-base font-bold">{editingTransactionId ? 'Edit' : 'New Transaction'}</h2>
+          <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-full text-slate-500">
+            <X size={18} />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          {/* Type Toggle */}
+          {/* Type Toggle - Slimmer */}
           <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
             <button
               onClick={() => setType('EXPENSE')}
-              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'EXPENSE' ? "bg-white shadow-sm text-expense scale-[1.02]" : "text-slate-400")}
+              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'EXPENSE' ? "bg-white shadow-sm text-expense" : "text-slate-500")}
             >
               Expense
             </button>
             <button
               onClick={() => setType('INCOME')}
-              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'INCOME' ? "bg-white shadow-sm text-income scale-[1.02]" : "text-slate-400")}
+              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'INCOME' ? "bg-white shadow-sm text-income" : "text-slate-500")}
             >
               Income
             </button>
           </div>
 
           <form id="add-tx-form" onSubmit={handleSubmit} className="space-y-3">
-            {/* Amount */}
-            <div className="space-y-0.5">
+            {/* Amount - Compact */}
+            <div className="space-y-1">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-black text-slate-300">Rs</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400">Rs</span>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -293,14 +293,14 @@ export default function AddTransactionSheet() {
                       setAmount(val);
                     }
                   }}
-                  className={cn("w-full bg-slate-50 text-xl font-black rounded-xl py-2 pl-10 pr-4 border-2 outline-none transition-colors", type === 'EXPENSE' ? "focus:border-expense/30" : "focus:border-income/30", "border-transparent")}
+                  className={cn("w-full bg-slate-50 text-xl font-black rounded-xl py-2 pl-10 pr-4 border-2 outline-none transition-colors", type === 'EXPENSE' ? "focus:border-expense" : "focus:border-income", "border-transparent")}
                   placeholder="0.00"
                   autoFocus
                 />
               </div>
             </div>
 
-            {/* Category Grid */}
+            {/* Compact Category Horizontal Scroll */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center px-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Category</label>
@@ -309,7 +309,7 @@ export default function AddTransactionSheet() {
                     type="button"
                     onClick={() => setIsManageMode(!isManageMode)}
                     className={cn(
-                      "text-[8px] font-black px-2 py-0.5 rounded-full transition-all tracking-widest",
+                      "text-[8px] font-bold px-2 py-0.5 rounded-full transition-all",
                       isManageMode ? "bg-red-50 text-red-500" : "bg-slate-100 text-slate-500"
                     )}
                   >
@@ -318,91 +318,96 @@ export default function AddTransactionSheet() {
                 )}
               </div>
 
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext 
-                  items={currentCategories.map(c => c.id)}
-                  strategy={rectSortingStrategy}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                 <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
                 >
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {currentCategories.map((cat) => (
-                      <SortableCategoryItem 
-                        key={cat.id} 
-                        cat={cat} 
-                        type={type}
-                        categoryId={categoryId}
-                        isManageMode={isManageMode}
-                        setCategoryId={setCategoryId}
-                        setCategoryToDelete={setCategoryToDelete}
-                      />
-                    ))}
-                    
-                    {/* Add New Category Button */}
-                    {!isAddingCategory && !isManageMode && (
-                      <div 
-                        onClick={() => setIsAddingCategory(true)}
-                        className="flex flex-col items-center justify-center p-1.5 rounded-lg cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100 min-h-[45px]"
-                      >
-                        <span className="text-sm font-black text-slate-400">+</span>
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
-              </DndContext>
+                  <SortableContext 
+                    items={currentCategories.map(c => c.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="flex gap-2 min-w-max">
+                      {currentCategories.map((cat) => (
+                        <div key={cat.id} className="min-w-[54px]">
+                          <SortableCategoryItem 
+                            cat={cat} 
+                            type={type}
+                            categoryId={categoryId}
+                            isManageMode={isManageMode}
+                            setCategoryId={setCategoryId}
+                            setCategoryToDelete={setCategoryToDelete}
+                          />
+                        </div>
+                      ))}
+                      
+                      {/* Add New Category Button */}
+                      {!isAddingCategory && !isManageMode && (
+                        <div 
+                          onClick={() => setIsAddingCategory(true)}
+                          className="flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100 h-full w-[54px]"
+                        >
+                          <span className="text-lg text-slate-400">+</span>
+                          <span className="text-[8px] font-bold text-slate-400">New</span>
+                        </div>
+                      )}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
 
               {isAddingCategory && (
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-primary/20 space-y-2 animate-fade-in relative z-20 mt-1">
+                <div className="bg-slate-50 p-2 rounded-xl border-2 border-primary/20 space-y-2 animate-fade-in relative z-20">
                   <div className="flex justify-between items-center">
-                    <p className="text-[9px] font-black text-primary uppercase tracking-widest">New Category</p>
+                    <p className="text-[9px] font-black text-primary uppercase">New Category</p>
                     <button type="button" onClick={() => setIsAddingCategory(false)}><X size={14} className="text-slate-400" /></button>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-lg border border-slate-200 shrink-0">
-                      {newCatIcon}
-                    </div>
-                    <div className="flex-1 flex gap-2">
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg border border-slate-200 shadow-sm shrink-0">
+                        {newCatIcon}
+                      </div>
                       <input 
                         type="text" 
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
-                        placeholder="Name..." 
-                        className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold outline-none focus:border-primary shadow-sm"
+                        placeholder="Category Name" 
+                        className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary"
                       />
-                      <button 
-                        type="button"
-                        onClick={handleAddCategory}
-                        className="bg-primary text-white px-3 rounded-lg text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
-                      >
-                        Add
-                      </button>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-10 gap-1 max-h-24 overflow-y-auto p-1 bg-white rounded-lg border border-slate-100 custom-scrollbar">
-                    {commonIcons.map(icon => (
-                      <button 
-                        key={icon} 
-                        type="button" 
-                        onClick={() => setNewCatIcon(icon)} 
-                        className={cn(
-                          "w-6 h-6 flex items-center justify-center rounded transition-all text-sm",
-                          newCatIcon === icon ? "bg-primary/10 scale-110" : "hover:bg-slate-50"
-                        )}
-                      >
-                        {icon}
-                      </button>
-                    ))}
+                    <div className="grid grid-cols-7 gap-1 max-h-24 overflow-y-auto p-1 bg-white rounded-lg border border-slate-100 custom-scrollbar">
+                      {commonIcons.map(icon => (
+                        <button 
+                          key={icon} 
+                          type="button" 
+                          onClick={() => setNewCatIcon(icon)} 
+                          className={cn(
+                            "w-7 h-7 flex items-center justify-center rounded-md transition-all text-base",
+                            newCatIcon === icon ? "bg-primary/20 scale-110 shadow-sm" : "hover:bg-slate-50"
+                          )}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button 
+                      type="button"
+                      onClick={handleAddCategory}
+                      className="w-full bg-primary text-white py-1.5 rounded-lg text-xs font-bold"
+                    >
+                      Add Category
+                    </button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Wallets */}
-            <div className="space-y-1 mt-1">
+            {/* Wallets - Compact */}
+            <div className="space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Wallet</label>
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {wallets.map(wallet => (
@@ -410,56 +415,56 @@ export default function AddTransactionSheet() {
                     key={wallet.id}
                     onClick={() => setWalletId(wallet.id)}
                     className={cn(
-                      "flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg cursor-pointer border transition-all shrink-0",
+                      "flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg cursor-pointer border-2 transition-all shrink-0",
                       walletId === wallet.id 
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-500"
+                        ? "border-primary bg-blue-50 text-primary"
+                        : "border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600"
                     )}
                   >
-                    <span className="text-sm">{wallet.icon}</span>
-                    <span className="text-[10px] font-black">{wallet.name}</span>
+                    <span className="text-xs">{wallet.icon}</span>
+                    <span className="text-[10px] font-bold">{wallet.name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Date & Note */}
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <div className="space-y-0.5">
+            {/* Date & Note - Compact */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Date</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-50 rounded-lg px-2 py-1.5 text-[10px] font-bold border border-transparent focus:border-primary/20 outline-none"
+                  className="w-full bg-slate-50 rounded-lg px-2 py-1.5 text-xs border-2 border-transparent focus:border-primary outline-none"
                 />
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Note</label>
                 <input
                   type="text"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Optional note"
-                  className="w-full bg-slate-50 rounded-lg px-2 py-1.5 text-[10px] font-bold border border-transparent focus:border-primary/20 outline-none"
+                  placeholder="Note..."
+                  className="w-full bg-slate-50 rounded-lg px-2 py-1.5 text-xs border-2 border-transparent focus:border-primary outline-none"
                 />
               </div>
             </div>
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="p-3 pt-1 border-t border-slate-50 bg-slate-50/30">
+        {/* Footer - Fixed & Slim */}
+        <div className="p-3 border-t border-slate-100 bg-white">
           <button
             type="submit"
             form="add-tx-form"
             className={cn(
-              "w-full py-2.5 rounded-xl text-white font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all active:scale-[0.97] shadow-lg",
+              "w-full py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
               type === 'EXPENSE' ? "bg-expense shadow-orange-200" : "bg-income shadow-green-200"
             )}
           >
-            <Check size={16} />
-            Confirm {type}
+            <Check size={18} />
+            SAVE
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from 'react';
 import { X, Check, Trash2, GripVertical } from 'lucide-react';
@@ -240,16 +240,30 @@ export default function AddTransactionSheet() {
   };
 
   const commonIcons = [
-    '💰', '🍔', '🛒', '🏠', '🚌', '🎮', '💊', '👕', '🔋', '🎁', '☕', '🎬', 
-    '🥦', '🍱', '🍕', '🍳', '🥤', '🍺', '🍦', '🍎', '🥩',
-    '🏫', '💼', '💻', '📈', '🏢', '🏗️', '🛠️', '👨‍💻',
-    '🏥', '🚑', '💉', '🦷', '🕶️', '💅', '💈',
-    '🚗', '🛵', '🚲', '⛽', '✈️', '🚂', '🚇', '🚢',
-    '🧘', '🏋️', '⚽', '🎨', '🎸', '📷', '🎧', '🔭',
-    '💧', '🔌', '📡', '🧹', '🧺', '🧼', '🔥', '❄️', '🪴',
-    '🐶', '🐱', '🐴', '🦁', '🦉', '🦋', '🐝'
+    // Nepali daily use
+    '\u{1F3E0}', '\u{1F95B}', '\u{1F375}', '\u{1F68C}', '\u{1F373}', '\u{1F966}', '\u{1F457}', '\u{1F3AC}', '\u{1F3E6}', '\u{1F4F1}',
+    // Food & drink
+    '\u{1F354}', '\u{1F355}', '\u{1F371}', '\u{1F35A}', '\u{1F96B}', '\u{1F35C}', '\u{2615}', '\u{1F37C}', '\u{1F964}',
+    // Shopping
+    '\u{1F6D2}', '\u{1F455}', '\u{1F454}', '\u{1F45F}', '\u{1F454}', '\u{1F484}',
+    // Transport
+    '\u{1F697}', '\u{1F6B5}', '\u{1F6B2}', '\u26F5', '\u2708\uFE0F', '\u{1F682}',
+    // Finance / Utilities
+    '\u{1F4A1}', '\u{1F50C}', '\u{1F4BB}', '\u{1F4DA}', '\u{1F3A8}', '\u{1F4DD}', '\u{1F527}',
+    // Health
+    '\u{1F3E5}', '\u{1F489}', '\u{1F9B7}', '\u{1F48A}',
+    // Fun
+    '\u{1F3AE}', '\u{1F3A7}', '\u{1F4F8}', '\u{1F3A8}', '\u26BD', '\u{1F3B8}',
+    // Misc
+    '\u{1F381}', '\u{1F525}', '\u2744\uFE0F', '\u{1F436}', '\u{1F431}', '\u{1F331}',
   ];
 
+  const quickSuggestCategories = [
+    { name: 'Rent', icon: '\u{1F3E0}' }, { name: 'Milk', icon: '\u{1F95B}' }, { name: 'Tea', icon: '\u{1F375}' },
+    { name: 'Bus', icon: '\u{1F68C}' }, { name: 'Kitchen', icon: '\u{1F373}' }, { name: 'Tarkari', icon: '\u{1F966}' },
+    { name: 'Cloth', icon: '\u{1F457}' }, { name: 'Loan', icon: '\u{1F3E6}' }, { name: 'Entertainment', icon: '\u{1F3AC}' },
+    { name: 'Food', icon: '\u{1F354}' }, { name: 'Health', icon: '\u{1F48A}' }, { name: 'Other', icon: '\u{1F4B8}' },
+  ];
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
       <div className="bg-card w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-xl max-h-[95vh] flex flex-col animate-slide-up">
@@ -366,6 +380,28 @@ export default function AddTransactionSheet() {
                   </div>
                   
                   <div className="space-y-2">
+                    {/* Quick suggestions */}
+                    <div className="flex gap-1.5 flex-wrap">
+                      {quickSuggestCategories
+                        .filter(s => !currentCategories.some(c => c.name.toLowerCase() === s.name.toLowerCase()))
+                        .map(s => (
+                          <button
+                            key={s.name}
+                            type="button"
+                            onClick={() => { setNewCatIcon(s.icon); setNewCatName(s.name); }}
+                            className={cn(
+                              "flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold transition-all",
+                              newCatName === s.name
+                                ? "bg-primary text-white border-primary"
+                                : "bg-white border-slate-200 text-slate-600 hover:border-primary"
+                            )}
+                          >
+                            <span>{s.icon}</span>
+                            <span>{s.name}</span>
+                          </button>
+                        ))}
+                    </div>
+
                     <div className="flex gap-2">
                       <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg border border-slate-200 shadow-sm shrink-0">
                         {newCatIcon}

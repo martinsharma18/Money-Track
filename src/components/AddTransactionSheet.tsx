@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from 'react';
 import { X, Check, Trash2, GripVertical } from 'lucide-react';
@@ -64,9 +64,9 @@ function SortableCategoryItem({
       className={cn(
         "flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer border-2 transition-all relative",
         categoryId === cat.id 
-          ? (type === 'EXPENSE' ? "border-expense bg-orange-50" : "border-income bg-green-50")
-          : "border-transparent bg-slate-50 hover:bg-slate-100",
-        isManageMode ? "ring-2 ring-red-100 cursor-grab active:cursor-grabbing" : "",
+          ? (type === 'EXPENSE' ? "border-expense bg-orange-50 dark:bg-orange-950/20" : "border-income bg-green-50 dark:bg-green-950/20")
+          : "border-transparent bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700",
+        isManageMode ? "ring-2 ring-red-100 dark:ring-red-900/30 cursor-grab active:cursor-grabbing" : "",
         isDragging ? "opacity-50 scale-105 shadow-lg border-primary" : ""
       )}
       {...(isManageMode ? { ...attributes, ...listeners } : {})}
@@ -268,9 +268,9 @@ export default function AddTransactionSheet() {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
       <div className="bg-card w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-xl max-h-[95vh] flex flex-col animate-slide-up">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-slate-100">
-          <h2 className="text-base font-bold">{editingTransactionId ? 'Edit' : 'New Transaction'}</h2>
-          <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-full text-slate-500">
+        <div className="flex items-center justify-between p-3 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-base font-bold text-foreground">{editingTransactionId ? 'Edit' : 'New Transaction'}</h2>
+          <button onClick={onClose} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-primary transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -278,16 +278,16 @@ export default function AddTransactionSheet() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
           {/* Type Toggle - Slimmer */}
-          <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-3">
             <button
               onClick={() => setType('EXPENSE')}
-              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'EXPENSE' ? "bg-white shadow-sm text-expense" : "text-slate-500")}
+              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'EXPENSE' ? "bg-white dark:bg-slate-700 shadow-sm text-expense" : "text-slate-500")}
             >
               Expense
             </button>
             <button
               onClick={() => setType('INCOME')}
-              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'INCOME' ? "bg-white shadow-sm text-income" : "text-slate-500")}
+              className={cn("flex-1 py-1 text-[10px] font-black uppercase rounded-lg transition-all", type === 'INCOME' ? "bg-white dark:bg-slate-700 shadow-sm text-income" : "text-slate-500")}
             >
               Income
             </button>
@@ -308,7 +308,7 @@ export default function AddTransactionSheet() {
                       setAmount(val);
                     }
                   }}
-                  className={cn("w-full bg-slate-50 text-xl font-black rounded-xl py-2 pl-10 pr-4 border-2 outline-none transition-colors", type === 'EXPENSE' ? "focus:border-expense" : "focus:border-income", "border-transparent")}
+                  className={cn("w-full bg-slate-50 dark:bg-slate-900 text-xl font-black rounded-xl py-2 pl-10 pr-4 border-2 outline-none transition-colors text-foreground", type === 'EXPENSE' ? "focus:border-expense" : "focus:border-income", "border-transparent ")}
                   placeholder="0.00"
                   autoFocus
                 />
@@ -325,7 +325,7 @@ export default function AddTransactionSheet() {
                     onClick={() => setIsManageMode(!isManageMode)}
                     className={cn(
                       "text-[8px] font-bold px-2 py-0.5 rounded-full transition-all",
-                      isManageMode ? "bg-red-50 text-red-500" : "bg-slate-100 text-slate-500"
+                      isManageMode ? "bg-red-50 dark:bg-red-950/20 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                     )}
                   >
                     {isManageMode ? 'DONE' : 'EDIT'}
@@ -361,7 +361,7 @@ export default function AddTransactionSheet() {
                       {!isAddingCategory && !isManageMode && (
                         <div 
                           onClick={() => setIsAddingCategory(true)}
-                          className="flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100 h-full w-[54px]"
+                          className="flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 h-full w-[54px]"
                         >
                           <span className="text-lg text-slate-400">+</span>
                           <span className="text-[8px] font-bold text-slate-400">New</span>
@@ -373,7 +373,7 @@ export default function AddTransactionSheet() {
               </div>
 
               {isAddingCategory && (
-                <div className="bg-slate-50 p-2 rounded-xl border-2 border-primary/20 space-y-2 animate-fade-in relative z-20">
+                <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl border-2 border-primary/20 space-y-2 animate-fade-in relative z-20">
                   <div className="flex justify-between items-center">
                     <p className="text-[9px] font-black text-primary uppercase">New Category</p>
                     <button type="button" onClick={() => setIsAddingCategory(false)}><X size={14} className="text-slate-400" /></button>
@@ -393,7 +393,7 @@ export default function AddTransactionSheet() {
                               "flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold transition-all",
                               newCatName === s.name
                                 ? "bg-primary text-white border-primary"
-                                : "bg-white border-slate-200 text-slate-600 hover:border-primary"
+                                : "bg-card dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-primary"
                             )}
                           >
                             <span>{s.icon}</span>
@@ -403,7 +403,7 @@ export default function AddTransactionSheet() {
                     </div>
 
                     <div className="flex gap-2">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg border border-slate-200 shadow-sm shrink-0">
+                      <div className="w-8 h-8 bg-card dark:bg-slate-800 rounded-lg flex items-center justify-center text-lg border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
                         {newCatIcon}
                       </div>
                       <input 
@@ -411,11 +411,11 @@ export default function AddTransactionSheet() {
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
                         placeholder="Category Name" 
-                        className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary"
+                        className="flex-1 bg-card dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary text-foreground"
                       />
                     </div>
 
-                    <div className="grid grid-cols-7 gap-1 max-h-24 overflow-y-auto p-1 bg-white rounded-lg border border-slate-100 custom-scrollbar">
+                    <div className="grid grid-cols-7 gap-1 max-h-24 overflow-y-auto p-1 bg-card dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 custom-scrollbar">
                       {commonIcons.map(icon => (
                         <button 
                           key={icon} 
@@ -423,7 +423,7 @@ export default function AddTransactionSheet() {
                           onClick={() => setNewCatIcon(icon)} 
                           className={cn(
                             "w-7 h-7 flex items-center justify-center rounded-md transition-all text-base",
-                            newCatIcon === icon ? "bg-primary/20 scale-110 shadow-sm" : "hover:bg-slate-50"
+                            newCatIcon === icon ? "bg-primary/20 scale-110 shadow-sm" : "hover:bg-slate-50 dark:hover:bg-slate-900"
                           )}
                         >
                           {icon}
@@ -491,12 +491,12 @@ export default function AddTransactionSheet() {
         </div>
 
         {/* Footer - Fixed & Slim */}
-        <div className="p-3 border-t border-slate-100 bg-white flex gap-2">
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-card/50 backdrop-blur-md flex gap-2">
           {editingTransactionId && (
             <button
               type="button"
               onClick={() => setTransactionToDelete(editingTransactionId)}
-              className="px-4 py-3 rounded-xl bg-orange-100 text-orange-600 font-black shadow-sm active:scale-95 transition-all text-sm flex items-center justify-center"
+              className="px-4 py-3 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-black shadow-sm active:scale-95 transition-all text-sm flex items-center justify-center border border-orange-200 dark:border-orange-800"
             >
               <Trash2 size={18} />
             </button>
@@ -506,7 +506,7 @@ export default function AddTransactionSheet() {
             form="add-tx-form"
             className={cn(
               "flex-1 py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
-              type === 'EXPENSE' ? "bg-expense shadow-orange-200" : "bg-income shadow-green-200"
+              type === 'EXPENSE' ? "bg-expense shadow-orange-200 dark:shadow-none" : "bg-income shadow-green-200 dark:shadow-none"
             )}
           >
             <Check size={18} />

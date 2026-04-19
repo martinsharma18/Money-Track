@@ -35,6 +35,7 @@ export interface Transaction {
 
 export interface Settings {
   dateDisplay: 'BS' | 'AD';
+  theme: 'light' | 'dark';
 }
 
 export interface AppState {

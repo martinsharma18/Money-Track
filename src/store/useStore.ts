@@ -43,6 +43,7 @@ export const useStore = create<AppState>()(
       user: null,
       settings: {
         dateDisplay: 'BS',
+        theme: 'light',
       },
       wallets: defaultWallets,
       categories: defaultCategories,

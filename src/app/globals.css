@@ -25,6 +25,25 @@
   /* orange-600 */
 }
 
+.dark {
+  --background: #0f172a;
+  /* very dark blue-slate */
+  --foreground: #f1f5f9;
+  /* slate-100 */
+
+  --card: #1e293b;
+  /* slate-800 */
+  --card-foreground: #f1f5f9;
+
+  --primary: #3b82f6;
+  /* blue-500 */
+  --primary-foreground: #ffffff;
+
+  --header-from: #020617;
+  --header-via: #1e3a8a;
+  --header-to: #312e81;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

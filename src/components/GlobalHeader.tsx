@@ -81,13 +81,13 @@ export default function GlobalHeader() {
 
         {/* Floating Balance Card - Very Compact */}
         <div className={cn(
-          "bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-2xl shadow-primary-dark/40 flex items-center divide-x divide-slate-100/50 relative z-10 transition-all duration-300 border border-white/40",
+          "bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-xl p-3 shadow-2xl shadow-primary-dark/40 flex items-center divide-x divide-slate-100/50 dark:divide-slate-800 relative z-10 transition-all duration-300 border border-white/40 dark:border-white/5",
           scrolled ? "p-1.5 px-3" : ""
         )}>
           <div className="flex-1 pr-3">
-            <p className="text-[8px] font-black text-slate-400 uppercase leading-none mb-1">Total Balance</p>
-            <p className={cn("font-black text-slate-900 leading-none truncate tracking-tight transition-all", scrolled ? "text-sm" : "text-lg")}>
-              <span className="text-slate-300 mr-0.5">Rs.</span>
+            <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none mb-1">Total Balance</p>
+            <p className={cn("font-black text-slate-900 dark:text-white leading-none truncate tracking-tight transition-all", scrolled ? "text-sm" : "text-lg")}>
+              <span className="text-slate-300 dark:text-slate-600 mr-0.5">Rs.</span>
               {stats.totalBalance.toLocaleString()}
             </p>
           </div>
@@ -95,24 +95,24 @@ export default function GlobalHeader() {
           <div className={cn("flex flex-1 justify-between pl-3 transition-all", scrolled ? "gap-2" : "gap-4")}>
             <div className="flex flex-col justify-center">
               <div className="flex items-center gap-1 mb-0.5">
-                <div className="w-3 h-3 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <TrendingUp size={8} className="text-emerald-600" />
+                <div className="w-3 h-3 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <TrendingUp size={8} className="text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <p className="text-[7px] font-black text-slate-400 uppercase tracking-wider">In</p>
+                <p className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">In</p>
               </div>
-              <p className={cn("font-bold text-slate-700 leading-none truncate", scrolled ? "text-[10px]" : "text-xs")}>
+              <p className={cn("font-bold text-slate-700 dark:text-slate-300 leading-none truncate", scrolled ? "text-[10px]" : "text-xs")}>
                 {stats.income.toLocaleString()}
               </p>
             </div>
             
             <div className="flex flex-col justify-center">
               <div className="flex items-center gap-1 mb-0.5">
-                <div className="w-3 h-3 rounded-full bg-rose-100 flex items-center justify-center">
-                  <TrendingDown size={8} className="text-rose-600" />
+                <div className="w-3 h-3 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                  <TrendingDown size={8} className="text-rose-600 dark:text-rose-400" />
                 </div>
-                <p className="text-[7px] font-black text-slate-400 uppercase tracking-wider">Out</p>
+                <p className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Out</p>
               </div>
-              <p className={cn("font-bold text-slate-700 leading-none truncate", scrolled ? "text-[10px]" : "text-xs")}>
+              <p className={cn("font-bold text-slate-700 dark:text-slate-300 leading-none truncate", scrolled ? "text-[10px]" : "text-xs")}>
                 {stats.expense.toLocaleString()}
               </p>
             </div>
@@ -122,7 +122,7 @@ export default function GlobalHeader() {
       
       {/* Float Search Bar */}
       {isSearchOpen && (
-        <div className="mt-2 mx-4 bg-white/95 backdrop-blur-md border border-slate-100 rounded-2xl p-2 shadow-2xl animate-slide-down relative z-30">
+        <div className="mt-2 mx-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-100 dark:border-slate-800 rounded-2xl p-2 shadow-2xl animate-slide-down relative z-30">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
             <input
@@ -131,7 +131,7 @@ export default function GlobalHeader() {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-9 pr-10 text-sm outline-none focus:border-primary transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl py-2 pl-9 pr-10 text-sm outline-none focus:border-primary transition-all text-slate-900 dark:text-white"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">

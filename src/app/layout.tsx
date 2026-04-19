@@ -8,6 +8,7 @@ import AuthGuard from "@/components/AuthGuard";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
 import GlobalHeader from "@/components/GlobalHeader";
 import { usePathname } from "next/navigation";
+import { useStore } from "@/store/useStore";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -17,10 +18,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const { settings } = useStore();
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/update-password";
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={settings.theme === 'dark' ? 'dark' : ''}>
       <body
         suppressHydrationWarning
         className={`${inter.variable} font-sans antialiased bg-background text-foreground pb-[80px] md:pb-0 min-h-screen`}

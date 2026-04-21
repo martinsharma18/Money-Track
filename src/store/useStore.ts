@@ -12,10 +12,14 @@ const defaultCategories: Category[] = [
   { id: '11111111-1111-4000-8000-000000000001', type: 'INCOME', name: 'Salary', icon: '💼', isCustom: false },
   { id: '11111111-1111-4000-8000-000000000002', type: 'INCOME', name: 'Freelance', icon: '💻', isCustom: false },
   { id: '11111111-1111-4000-8000-000000000003', type: 'INCOME', name: 'Business', icon: '🏪', isCustom: false },
-  { id: '11111111-1111-4000-8000-000000000004', type: 'INCOME', name: 'Gift', icon: '🎁', isCustom: false },
-  { id: '11111111-1111-4000-8000-000000000005', type: 'INCOME', name: 'Rent', icon: '🏠', isCustom: false },
-  { id: '11111111-1111-4000-8000-000000000006', type: 'INCOME', name: 'Other', icon: '💰', isCustom: false },
-  // Expense — Nepali daily-use categories
+  { id: '11111111-1111-4000-8000-000000000004', type: 'INCOME', name: 'Bonus', icon: '💰', isCustom: false },
+  { id: '11111111-1111-4000-8000-000000000005', type: 'INCOME', name: 'Gift', icon: '🎁', isCustom: false },
+  { id: '11111111-1111-4000-8000-000000000006', type: 'INCOME', name: 'Rent', icon: '🏠', isCustom: false },
+  { id: '11111111-1111-4000-8000-000000000007', type: 'INCOME', name: 'Interest', icon: '🏦', isCustom: false },
+  { id: '11111111-1111-4000-8000-000000000008', type: 'INCOME', name: 'Dividend', icon: '📈', isCustom: false },
+  { id: '11111111-1111-4000-8000-000000000009', type: 'INCOME', name: 'Other', icon: '💵', isCustom: false },
+
+  // Expense — Nepali daily-use & basic categories
   { id: '22222222-2222-4000-8000-000000000001', type: 'EXPENSE', name: 'Rent', icon: '🏠', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000002', type: 'EXPENSE', name: 'Milk', icon: '🥛', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000003', type: 'EXPENSE', name: 'Tea', icon: '🍵', isCustom: false },
@@ -29,7 +33,23 @@ const defaultCategories: Category[] = [
   { id: '22222222-2222-4000-8000-000000000011', type: 'EXPENSE', name: 'Clothes', icon: '👕', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000012', type: 'EXPENSE', name: 'Coldrinks', icon: '🥤', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000013', type: 'EXPENSE', name: 'Girl', icon: '👧', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000014', type: 'EXPENSE', name: 'Other', icon: '💸', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000014', type: 'EXPENSE', name: 'Health', icon: '🏥', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000015', type: 'EXPENSE', name: 'Education', icon: '📚', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000016', type: 'EXPENSE', name: 'Grocery', icon: '🛒', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000017', type: 'EXPENSE', name: 'Fuel', icon: '⛽', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000018', type: 'EXPENSE', name: 'Internet', icon: '🌐', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000019', type: 'EXPENSE', name: 'Electric', icon: '💡', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000020', type: 'EXPENSE', name: 'Water', icon: '💧', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000021', type: 'EXPENSE', name: 'Maintenance', icon: '🛠️', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000022', type: 'EXPENSE', name: 'Entertainment', icon: '🎬', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000023', type: 'EXPENSE', name: 'Insurance', icon: '🛡️', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000024', type: 'EXPENSE', name: 'Travel', icon: '✈️', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000025', type: 'EXPENSE', name: 'Gift', icon: '🎁', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000026', type: 'EXPENSE', name: 'Subscription', icon: '📺', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000027', type: 'EXPENSE', name: 'Beauty', icon: '💄', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000028', type: 'EXPENSE', name: 'Social', icon: '🍻', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000029', type: 'EXPENSE', name: 'Tax', icon: '📉', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000030', type: 'EXPENSE', name: 'Other', icon: '💸', isCustom: false },
 ];
 
 const defaultWallets: Wallet[] = [
@@ -170,16 +190,18 @@ export const useStore = create<AppState>()(
           };
           
           // Insert Transaction
-          await supabase.from('transactions').insert(dbPayload);
+          const { error: txError } = await supabase.from('transactions').insert(dbPayload);
+          if (txError) throw txError;
           
           // Update Wallet Balance in DB
           const wallet = useStore.getState().wallets.find(w => w.id === transaction.walletId);
           if (wallet) {
-            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+            const { error: wError } = await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+            if (wError) throw wError;
           }
         } catch (error) {
           console.error('Error syncing transaction:', error);
-          toast.error("Cloud sync failed, will retry later");
+          toast.error("Cloud sync failed. Check your connection or categories.");
         }
       },
 
@@ -295,7 +317,20 @@ export const useStore = create<AppState>()(
         }
 
         try {
-          // 1. Fetch Categories (User specific + Global defaults)
+          // 1. Fetch & Sync Categories (Always ensure defaults are present)
+          const initialCats = defaultCategories.map(c => ({
+            id: c.id,
+            type: c.type,
+            name: c.name,
+            icon: c.icon,
+            is_custom: false,
+            order: c.order || 0,
+            user_id: user.id
+          }));
+          
+          // Upsert default categories to ensure they exist for this user in DB
+          await supabase.from('categories').upsert(initialCats, { onConflict: 'id' });
+
           const { data: categories, error: cError } = await supabase
             .from('categories')
             .select('*')
@@ -313,22 +348,10 @@ export const useStore = create<AppState>()(
                order: c.order
             }));
             
-            // Prefer user's version of a category if there are name/type collisions, 
-            // but for now we just filter custom vs default based on hardcoded IDs
+            // Deduplicate: preference goes to defaults (hardcoded IDs) and user-specific custom ones
             const customCats = mappedCategories.filter(c => c.isCustom);
-            set((state) => ({ categories: [...defaultCategories, ...customCats] }));
+            set({ categories: [...defaultCategories, ...customCats] });
           } else {
-             // Seed default categories if none exist at all in DB for this user
-             const initialCats = defaultCategories.map(c => ({
-               id: c.id,
-               type: c.type,
-               name: c.name,
-               icon: c.icon,
-               is_custom: false,
-               order: c.order || 0,
-               user_id: user.id
-             }));
-             await supabase.from('categories').insert(initialCats);
              set({ categories: defaultCategories });
           }
 

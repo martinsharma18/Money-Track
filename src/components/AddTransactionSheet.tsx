@@ -175,11 +175,14 @@ export default function AddTransactionSheet() {
     }
   }, [isOpen, editingTransactionId, categories, wallets, transactions]);
 
-  // Update default category when type changes
+  // Update default category when type changes (only if current cat doesn't match type)
   useEffect(() => {
-    const defaultCat = categories.find(c => c.type === type);
-    if (defaultCat) setCategoryId(defaultCat.id);
-  }, [type, categories]);
+    const currentCat = categories.find(c => c.id === categoryId);
+    if (!categoryId || !currentCat || currentCat.type !== type) {
+      const defaultCat = categories.find(c => c.type === type);
+      if (defaultCat) setCategoryId(defaultCat.id);
+    }
+  }, [type, categories, categoryId]);
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -245,7 +248,7 @@ export default function AddTransactionSheet() {
     // Food & drink
     '\u{1F354}', '\u{1F355}', '\u{1F371}', '\u{1F35A}', '\u{1F96B}', '\u{1F35C}', '\u{2615}', '\u{1F37C}', '\u{1F964}',
     // Shopping
-    '\u{1F6D2}', '\u{1F455}', '\u{1F454}', '\u{1F45F}', '\u{1F454}', '\u{1F484}',
+    '\u{1F6D2}', '\u{1F455}', '\u{1F454}', '\u{1F45F}', '\u{1F484}',
     // Transport
     '\u{1F697}', '\u{1F6B5}', '\u{1F6B2}', '\u26F5', '\u2708\uFE0F', '\u{1F682}',
     // Finance / Utilities
@@ -253,16 +256,17 @@ export default function AddTransactionSheet() {
     // Health
     '\u{1F3E5}', '\u{1F489}', '\u{1F9B7}', '\u{1F48A}',
     // Fun
-    '\u{1F3AE}', '\u{1F3A7}', '\u{1F4F8}', '\u{1F3A8}', '\u26BD', '\u{1F3B8}',
+    '\u{1F3AE}', '\u{1F3A7}', '\u{1F4F8}', '\u26BD', '\u{1F3B8}',
     // Misc
     '\u{1F381}', '\u{1F525}', '\u2744\uFE0F', '\u{1F436}', '\u{1F431}', '\u{1F331}',
   ];
 
   const quickSuggestCategories = [
-    { name: 'Rent', icon: '\u{1F3E0}' }, { name: 'Milk', icon: '\u{1F95B}' }, { name: 'Tea', icon: '\u{1F375}' },
-    { name: 'Bus', icon: '\u{1F68C}' }, { name: 'Kitchen', icon: '\u{1F373}' }, { name: 'Tarkari', icon: '\u{1F966}' },
-    { name: 'Cloth', icon: '\u{1F457}' }, { name: 'Loan', icon: '\u{1F3E6}' }, { name: 'Entertainment', icon: '\u{1F3AC}' },
-    { name: 'Food', icon: '\u{1F354}' }, { name: 'Health', icon: '\u{1F48A}' }, { name: 'Other', icon: '\u{1F4B8}' },
+    { name: 'Rent', icon: '🏠' }, { name: 'Milk', icon: '🥛' }, { name: 'Tea', icon: '🍵' },
+    { name: 'Bus', icon: '🚌' }, { name: 'Kitchen', icon: '🍳' }, { name: 'Tarkari', icon: '🥦' },
+    { name: 'Gym', icon: '🏋️' }, { name: 'Loan', icon: '🏦' }, { name: 'Khaja', icon: '🥟' },
+    { name: 'Futsal', icon: '⚽' }, { name: 'Clothes', icon: '👕' }, { name: 'Coldrinks', icon: '🥤' },
+    { name: 'Girl', icon: '👧' }, { name: 'Health', icon: '🏥' }, { name: 'Other', icon: '💸' },
   ];
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">

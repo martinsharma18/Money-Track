@@ -115,8 +115,10 @@ export default function Home() {
 
 function TransactionItem({ transaction: t }: { transaction: Transaction }) {
   const { categories, openAddSheet } = useStore();
-  const c = categories.find(cat => cat.id === t.categoryId);
-  if (!c) return null;
+  const c = categories.find(cat => cat.id === t.categoryId) || {
+    name: 'Deleted Category',
+    icon: '❓',
+  };
 
   return (
     <div 

@@ -19,11 +19,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (hasHydrated && !user && !isAuthPage) {
       router.replace("/login");
     }
-    
+  }, [user, hasHydrated, isAuthPage, router]);
+
+  useEffect(() => {
     if (hasHydrated && user) {
       fetchInitialData();
     }
-  }, [user, hasHydrated, isAuthPage, router, fetchInitialData]);
+  }, [user, hasHydrated, fetchInitialData]);
 
   if (!hasHydrated) {
     return (

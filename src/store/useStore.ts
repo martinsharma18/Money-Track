@@ -22,11 +22,14 @@ const defaultCategories: Category[] = [
   { id: '22222222-2222-4000-8000-000000000004', type: 'EXPENSE', name: 'Bus', icon: '🚌', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000005', type: 'EXPENSE', name: 'Kitchen', icon: '🍳', isCustom: false },
   { id: '22222222-2222-4000-8000-000000000006', type: 'EXPENSE', name: 'Tarkari', icon: '🥦', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000007', type: 'EXPENSE', name: 'Shopping', icon: '🛒', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000008', type: 'EXPENSE', name: 'Entertainment', icon: '🎬', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000009', type: 'EXPENSE', name: 'Loan', icon: '🏦', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000010', type: 'EXPENSE', name: 'Mobile', icon: '📱', isCustom: false },
-  { id: '22222222-2222-4000-8000-000000000011', type: 'EXPENSE', name: 'Other', icon: '💸', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000007', type: 'EXPENSE', name: 'Gym', icon: '🏋️', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000008', type: 'EXPENSE', name: 'Loan', icon: '🏦', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000009', type: 'EXPENSE', name: 'Khaja', icon: '🥟', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000010', type: 'EXPENSE', name: 'Futsal', icon: '⚽', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000011', type: 'EXPENSE', name: 'Clothes', icon: '👕', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000012', type: 'EXPENSE', name: 'Coldrinks', icon: '🥤', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000013', type: 'EXPENSE', name: 'Girl', icon: '👧', isCustom: false },
+  { id: '22222222-2222-4000-8000-000000000014', type: 'EXPENSE', name: 'Other', icon: '💸', isCustom: false },
 ];
 
 const defaultWallets: Wallet[] = [
@@ -292,8 +295,12 @@ export const useStore = create<AppState>()(
         }
 
         try {
-          // 1. Fetch Categories (Seed if missing)
-          const { data: categories, error: cError } = await supabase.from('categories').select('*').eq('user_id', user.id);
+          // 1. Fetch Categories (User specific + Global defaults)
+          const { data: categories, error: cError } = await supabase
+            .from('categories')
+            .select('*')
+            .or(`user_id.eq.${user.id},user_id.is.null`);
+
           if (cError) throw cError;
           
           if (categories && categories.length > 0) {
@@ -302,13 +309,16 @@ export const useStore = create<AppState>()(
                type: c.type,
                name: c.name,
                icon: c.icon,
-               isCustom: c.is_custom !== undefined ? c.is_custom : c.isCustom,
+               isCustom: c.is_custom !== undefined ? c.is_custom : !!c.isCustom,
                order: c.order
             }));
+            
+            // Prefer user's version of a category if there are name/type collisions, 
+            // but for now we just filter custom vs default based on hardcoded IDs
             const customCats = mappedCategories.filter(c => c.isCustom);
             set((state) => ({ categories: [...defaultCategories, ...customCats] }));
           } else {
-             // Seed default categories
+             // Seed default categories if none exist at all in DB for this user
              const initialCats = defaultCategories.map(c => ({
                id: c.id,
                type: c.type,

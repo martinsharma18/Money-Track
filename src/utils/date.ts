@@ -79,3 +79,27 @@ export const addMonths = (date: Date, dir: number, mode: 'BS' | 'AD'): Date => {
     return new Date(res.year, res.month - 1, res.day);
   }
 };
+export const getDaysInMonth = (year: number, month: number, mode: 'BS' | 'AD'): number => {
+  if (mode === 'AD') {
+    return new Date(year, month, 0).getDate();
+  } else {
+    // Find difference between start of this month and start of next month in greg
+    const current = bs.toGreg(year, month, 1);
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    const next = bs.toGreg(nextYear, nextMonth, 1);
+    
+    const d1 = new Date(current.year, current.month - 1, current.day);
+    const d2 = new Date(next.year, next.month - 1, next.day);
+    return Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+  }
+};
+
+export const getFirstDayOfMonth = (year: number, month: number, mode: 'BS' | 'AD'): number => {
+  if (mode === 'AD') {
+    return new Date(year, month - 1, 1).getDay();
+  } else {
+    const greg = bs.toGreg(year, month, 1);
+    return new Date(greg.year, greg.month - 1, greg.day).getDay();
+  }
+};

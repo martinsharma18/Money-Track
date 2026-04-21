@@ -8,6 +8,8 @@ import { cn } from "@/utils/cn";
 import { Transaction } from "@/types";
 import { usePeriodView } from "@/hooks/usePeriodView";
 import ConfirmModal from "@/components/ConfirmModal";
+import TransactionCalendar from "@/components/TransactionCalendar";
+import { LayoutList, Calendar as CalendarDays } from "lucide-react";
 
 export default function TransactionsPage() {
   const { transactions, categories, wallets, settings, deleteTransaction, hasHydrated } = useStore();
@@ -15,6 +17,7 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'LIST' | 'CALENDAR'>('LIST');
 
   const filteredTransactions = useMemo(() => {
     const { start, end } = monthBoundaries;
@@ -38,7 +41,31 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-3 sm:p-6 space-y-4 max-w-lg mx-auto pb-32 animate-fade-in custom-scrollbar">
-      <h1 className="text-xl font-bold font-sans px-1">Transactions</h1>
+      <div className="flex justify-between items-center px-1">
+        <h1 className="text-xl font-bold font-sans">Transactions</h1>
+        
+        {/* View Toggle */}
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+          <button 
+            onClick={() => setViewMode('LIST')}
+            className={cn(
+              "p-1.5 rounded-lg transition-all",
+              viewMode === 'LIST' ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-slate-400"
+            )}
+          >
+            <LayoutList size={14} />
+          </button>
+          <button 
+            onClick={() => setViewMode('CALENDAR')}
+            className={cn(
+              "p-1.5 rounded-lg transition-all",
+              viewMode === 'CALENDAR' ? "bg-white dark:bg-slate-700 shadow-sm text-primary" : "text-slate-400"
+            )}
+          >
+            <CalendarDays size={14} />
+          </button>
+        </div>
+      </div>
       
       {/* Search & Filter */}
       <div className="space-y-2">
@@ -71,14 +98,20 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {/* List */}
-      <div className="space-y-2">
-        {filteredTransactions.length === 0 ? (
-          <p className="text-center text-slate-400 py-10 text-xs">No transactions found</p>
+      {/* Content */}
+      <div className="space-y-4">
+        {viewMode === 'LIST' ? (
+          <div className="space-y-2">
+            {filteredTransactions.length === 0 ? (
+              <p className="text-center text-slate-400 py-10 text-xs">No transactions found</p>
+            ) : (
+              filteredTransactions.map(t => (
+                <TransactionCard key={t.id} transaction={t} onDelete={() => setTxToDelete(t.id)} />
+              ))
+            )}
+          </div>
         ) : (
-          filteredTransactions.map(t => (
-            <TransactionCard key={t.id} transaction={t} onDelete={() => setTxToDelete(t.id)} />
-          ))
+          <TransactionCalendar />
         )}
       </div>
 

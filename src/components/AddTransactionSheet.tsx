@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { X, Check, Trash2, GripVertical } from 'lucide-react';
+import { X, Check, Trash2, GripVertical, Calendar as CalendarIcon } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
+import CalendarPicker from './CalendarPicker';
+import { formatDisplayDate } from '@/utils/date';
+
 import {
   DndContext,
   closestCenter,
@@ -99,7 +102,7 @@ function SortableCategoryItem({
 }
 
 export default function AddTransactionSheet() {
-  const { categories, wallets, addTransaction, updateTransaction, deleteTransaction, deleteCategory, reorderCategories, transactions, isAddSheetOpen: isOpen, closeAddSheet: onClose, editingTransactionId } = useStore();
+  const { categories, wallets, addTransaction, updateTransaction, deleteTransaction, deleteCategory, reorderCategories, transactions, settings, isAddSheetOpen: isOpen, closeAddSheet: onClose, editingTransactionId } = useStore();
   
   const [type, setType] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
   const [amount, setAmount] = useState('');
@@ -111,6 +114,7 @@ export default function AddTransactionSheet() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isManageMode, setIsManageMode] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -473,12 +477,14 @@ export default function AddTransactionSheet() {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Date</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-50 rounded-lg px-2 py-1.5 text-xs border-2 border-transparent focus:border-primary outline-none"
-                />
+                <button
+                  type="button"
+                  onClick={() => setIsCalendarOpen(true)}
+                  className="w-full bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-2 text-xs border-2 border-transparent text-left font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  <CalendarIcon size={12} className="text-primary" />
+                  {formatDisplayDate(date, settings.dateDisplay)}
+                </button>
               </div>
               <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Note</label>
@@ -545,6 +551,15 @@ export default function AddTransactionSheet() {
         title="Delete Transaction?"
         message="Are you sure you want to permanently delete this transaction? Your balance will be updated automatically."
       />
+
+      {isCalendarOpen && (
+        <CalendarPicker 
+          value={date}
+          mode={settings.dateDisplay}
+          onClose={() => setIsCalendarOpen(false)}
+          onChange={(newDate) => setDate(newDate)}
+        />
+      )}
     </div>
   );
 }

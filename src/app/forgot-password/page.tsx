@@ -7,7 +7,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
 
-import { supabase } from "@/utils/supabase";
+import { supabase, getURL } from "@/utils/supabase";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: `${getURL()}update-password`,
       });
 
       if (error) throw error;

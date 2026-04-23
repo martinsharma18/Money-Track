@@ -1,4 +1,6 @@
 export type TransactionType = 'INCOME' | 'EXPENSE';
+export type LoanType = 'LENT' | 'BORROWED';
+
 
 export interface User {
   id: string;
@@ -33,6 +35,30 @@ export interface Transaction {
   note: string;
 }
 
+export interface Loan {
+  id: string;
+  type: LoanType;
+  personName: string;
+  amount: number;
+  remainingAmount: number;
+  interestRate?: number;
+  dueDate?: string;
+  date: string;
+  note: string;
+  walletId: string;
+  status: 'ACTIVE' | 'PAID';
+}
+
+export interface LoanPayment {
+  id: string;
+  loanId: string;
+  amount: number;
+  date: string;
+  walletId: string;
+  note: string;
+}
+
+
 export interface Settings {
   dateDisplay: 'BS' | 'AD';
   theme: 'light' | 'dark';
@@ -44,6 +70,9 @@ export interface AppState {
   wallets: Wallet[];
   categories: Category[];
   transactions: Transaction[];
+  loans: Loan[];
+  loanPayments: LoanPayment[];
+
   
   // UI State
   isAddSheetOpen: boolean;
@@ -75,6 +104,13 @@ export interface AppState {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (id: string, data: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
+  
+  addLoan: (loan: Omit<Loan, 'id' | 'remainingAmount' | 'status'>) => void;
+  updateLoan: (id: string, data: Partial<Loan>) => void;
+  deleteLoan: (id: string) => void;
+  addLoanPayment: (payment: Omit<LoanPayment, 'id'>) => void;
+  deleteLoanPayment: (id: string) => void;
+
   
   hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;

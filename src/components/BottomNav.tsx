@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, PieChart, Plus, User } from 'lucide-react';
+import { Home, BarChart3, Plus, User, Banknote } from 'lucide-react';
+
 import { cn } from '@/utils/cn';
 import { useStore } from '@/store/useStore';
 
@@ -10,10 +11,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const { openAddSheet } = useStore();
 
-  const navItems = [
-    { href: '/', icon: Home, label: 'Home' },
-    { href: '/stats', icon: PieChart, label: 'Stats' },
-  ];
+
 
   return (
     <>
@@ -30,9 +28,10 @@ export default function BottomNav() {
           href="/stats" 
           className={cn("flex flex-col items-center gap-1 p-2 transition-colors", pathname === '/stats' ? "text-primary font-medium" : "text-slate-500")}
         >
-          <PieChart size={24} />
-          <span>Stats</span>
+          <BarChart3 size={24} />
+          <span>Analytics</span>
         </Link>
+
         
         <button 
           onClick={() => openAddSheet()}
@@ -42,11 +41,11 @@ export default function BottomNav() {
         </button>
 
         <Link 
-          href="/transactions" 
-          className={cn("flex flex-col items-center gap-1 p-2 transition-colors", pathname === '/transactions' ? "text-primary font-medium" : "text-slate-500")}
+          href="/loans" 
+          className={cn("flex flex-col items-center gap-1 p-2 transition-colors", pathname === '/loans' ? "text-primary font-medium" : "text-slate-500")}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span>All</span>
+          <Banknote size={24} />
+          <span>Loans</span>
         </Link>
         
         <Link 
@@ -56,6 +55,7 @@ export default function BottomNav() {
           <User size={24} />
           <span>Profile</span>
         </Link>
+
       </div>
     </>
   );

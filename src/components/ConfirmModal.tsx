@@ -15,13 +15,14 @@ interface ConfirmModalProps {
 
 export default function ConfirmModal({ 
   isOpen, 
-  onClose, 
+  onClose = () => {}, 
   onConfirm, 
   title, 
   message, 
   confirmText = "Delete", 
   type = 'danger' 
 }: ConfirmModalProps) {
+
   if (!isOpen) return null;
 
   return (

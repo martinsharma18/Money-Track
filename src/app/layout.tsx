@@ -9,6 +9,9 @@ import AddTransactionSheet from "@/components/AddTransactionSheet";
 import GlobalHeader from "@/components/GlobalHeader";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/store/useStore";
+import { useEffect } from "react";
+import { supabase } from "@/utils/supabase";
+
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -20,6 +23,25 @@ export default function RootLayout({
   const pathname = usePathname();
   const { settings } = useStore();
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/update-password";
+  const { login, logout } = useStore();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        login({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
+        });
+      } else if (event === 'SIGNED_OUT') {
+        logout();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [login, logout]);
+
+
 
   return (
     <html lang="en" suppressHydrationWarning className={settings.theme === 'dark' ? 'dark' : ''}>

@@ -71,6 +71,8 @@ export const useStore = create<AppState>()(
       wallets: defaultWallets,
       categories: defaultCategories,
       transactions: [],
+      loans: [],
+      loanPayments: [],
       hasHydrated: false,
       
       isAddSheetOpen: false,
@@ -89,7 +91,7 @@ export const useStore = create<AppState>()(
       login: (user) => set({ user }),
       logout: async () => {
         await supabase.auth.signOut();
-        set({ user: null, transactions: [], wallets: defaultWallets, categories: defaultCategories });
+        set({ user: null, transactions: [], wallets: defaultWallets, categories: defaultCategories, loans: [], loanPayments: [] });
       },
       updateUser: (data) => set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
       updateSettings: (data) => set((state) => ({ settings: { ...state.settings, ...data } })),
@@ -304,39 +306,226 @@ export const useStore = create<AppState>()(
         }
       },
 
-      fetchInitialData: async () => {
-        const { user } = (useStore.getState() as any);
+      addLoan: async (loan) => {
+        const { user } = useStore.getState();
         if (!user) return;
 
-        // Simple UUID validation to prevent 400 errors from Supabase if an old dummy ID (like 'u1') is present
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(user.id)) {
-          console.warn('Invalid user ID format detected. Logging out to clear state.');
+        const id = uuidv4();
+        const newLoan = { ...loan, id, remainingAmount: loan.amount, status: 'ACTIVE' as const, user_id: user.id };
+        
+        set((state) => {
+          const updatedWallets = state.wallets.map(w => {
+            if (w.id === loan.walletId) {
+              const amountChange = loan.type === 'BORROWED' ? loan.amount : -loan.amount;
+              return { ...w, balance: w.balance + amountChange };
+            }
+            return w;
+          });
+          return {
+            loans: [...state.loans, newLoan as any],
+            wallets: updatedWallets
+          };
+        });
+
+        try {
+          const dbPayload = {
+            id: newLoan.id,
+            user_id: newLoan.user_id,
+            wallet_id: newLoan.walletId,
+            person_name: newLoan.personName,
+            amount: newLoan.amount,
+            remaining_amount: newLoan.remainingAmount,
+            interest_rate: newLoan.interestRate,
+            type: newLoan.type,
+            status: newLoan.status,
+            due_date: newLoan.dueDate,
+            date: newLoan.date,
+            note: newLoan.note
+          };
+          
+          await supabase.from('loans').insert(dbPayload);
+          
+          const wallet = useStore.getState().wallets.find(w => w.id === loan.walletId);
+          if (wallet) {
+            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+          }
+        } catch (error) {
+          console.error('Error adding loan:', error);
+          toast.error("Failed to sync loan");
+        }
+      },
+
+      updateLoan: async (id, data) => {
+        set((state) => ({
+          loans: state.loans.map(l => l.id === id ? { ...l, ...data } : l)
+        }));
+
+        try {
+          const dbData: any = { ...data };
+          if (data.personName) { dbData.person_name = data.personName; delete dbData.personName; }
+          if (data.walletId) { dbData.wallet_id = data.walletId; delete dbData.walletId; }
+          if (data.remainingAmount !== undefined) { dbData.remaining_amount = data.remainingAmount; delete dbData.remainingAmount; }
+          if (data.interestRate !== undefined) { dbData.interest_rate = data.interestRate; delete dbData.interestRate; }
+          if (data.dueDate !== undefined) { dbData.due_date = data.dueDate; delete dbData.dueDate; }
+          
+          await supabase.from('loans').update(dbData).eq('id', id);
+        } catch (error) {
+          console.error('Error updating loan:', error);
+        }
+      },
+
+      deleteLoan: async (id) => {
+        set((state) => ({
+          loans: state.loans.filter(l => l.id !== id)
+        }));
+        await supabase.from('loans').delete().eq('id', id);
+      },
+
+      addLoanPayment: async (payment) => {
+        const { user } = useStore.getState();
+        if (!user) return;
+
+        const id = uuidv4();
+        const newPayment = { ...payment, id, user_id: user.id };
+
+        set((state) => {
+          const loan = state.loans.find(l => l.id === payment.loanId);
+          if (!loan) return state;
+
+          const newRemaining = loan.remainingAmount - payment.amount;
+          const newStatus = newRemaining <= 0 ? 'PAID' : 'ACTIVE';
+
+          const updatedLoans = state.loans.map(l => 
+            l.id === payment.loanId ? { ...l, remainingAmount: newRemaining, status: newStatus as any } : l
+          );
+
+          const updatedWallets = state.wallets.map(w => {
+            if (w.id === payment.walletId) {
+              // If we BORROWED, paying back is an EXPENSE (-balance)
+              // If we LENT, getting paid back is INCOME (+balance)
+              const amountChange = loan.type === 'BORROWED' ? -payment.amount : payment.amount;
+              return { ...w, balance: w.balance + amountChange };
+            }
+            return w;
+          });
+
+          return {
+            loanPayments: [...state.loanPayments, newPayment as any],
+            loans: updatedLoans,
+            wallets: updatedWallets
+          };
+        });
+
+        try {
+          const dbPayload = {
+            id: newPayment.id,
+            user_id: newPayment.user_id,
+            loan_id: newPayment.loanId,
+            wallet_id: newPayment.walletId,
+            amount: newPayment.amount,
+            date: newPayment.date,
+            note: newPayment.note
+          };
+          await supabase.from('loan_payments').insert(dbPayload);
+
+          const loan = useStore.getState().loans.find(l => l.id === payment.loanId);
+          if (loan) {
+            await supabase.from('loans').update({ 
+              remaining_amount: loan.remainingAmount, 
+              status: loan.status 
+            }).eq('id', loan.id);
+          }
+
+          const wallet = useStore.getState().wallets.find(w => w.id === payment.walletId);
+          if (wallet) {
+            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+          }
+        } catch (error) {
+          console.error('Error adding payment:', error);
+          toast.error("Failed to sync payment");
+        }
+      },
+
+      deleteLoanPayment: async (id) => {
+        const payment = useStore.getState().loanPayments.find(p => p.id === id);
+        if (!payment) return;
+
+        set((state) => {
+          const loan = state.loans.find(l => l.id === payment.loanId);
+          if (!loan) return state;
+
+          const newRemaining = loan.remainingAmount + payment.amount;
+          const newStatus = newRemaining <= 0 ? 'PAID' : 'ACTIVE';
+
+          const updatedLoans = state.loans.map(l => 
+            l.id === payment.loanId ? { ...l, remainingAmount: newRemaining, status: newStatus as any } : l
+          );
+
+          const updatedWallets = state.wallets.map(w => {
+            if (w.id === payment.walletId) {
+              const amountChange = loan.type === 'BORROWED' ? payment.amount : -payment.amount;
+              return { ...w, balance: w.balance + amountChange };
+            }
+            return w;
+          });
+
+          return {
+            loanPayments: state.loanPayments.filter(p => p.id !== id),
+            loans: updatedLoans,
+            wallets: updatedWallets
+          };
+        });
+
+        try {
+          await supabase.from('loan_payments').delete().eq('id', id);
+          
+          const loan = useStore.getState().loans.find(l => l.id === payment.loanId);
+          if (loan) {
+             await supabase.from('loans').update({ 
+               remaining_amount: loan.remainingAmount, 
+               status: loan.status 
+             }).eq('id', loan.id);
+          }
+
+          const wallet = useStore.getState().wallets.find(w => w.id === payment.walletId);
+          if (wallet) {
+            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+          }
+        } catch (error) {
+          console.error('Error deleting payment:', error);
+        }
+      },
+
+      fetchInitialData: async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          console.warn('No active Supabase session found. Logging out.');
           useStore.getState().logout();
           return;
         }
 
-        try {
-          // 1. Fetch & Sync Categories (Always ensure defaults are present)
-          const initialCats = defaultCategories.map(c => ({
-            id: c.id,
-            type: c.type,
-            name: c.name,
-            icon: c.icon,
-            is_custom: false,
-            order: c.order || 0,
-            user_id: user.id
-          }));
-          
-          // Upsert default categories to ensure they exist for this user in DB
-          await supabase.from('categories').upsert(initialCats, { onConflict: 'id' });
+        const user = session.user;
+        
+        // Ensure user in store matches session user
+        if (useStore.getState().user?.id !== user.id) {
+           useStore.getState().login({
+             id: user.id,
+             email: user.email || '',
+             name: user.user_metadata?.name || user.email?.split('@')[0] || 'User'
+           });
+        }
 
+
+        try {
+          // 1. Fetch User Categories (No need to upsert defaults, they stay in UI)
           const { data: categories, error: cError } = await supabase
             .from('categories')
             .select('*')
-            .or(`user_id.eq.${user.id},user_id.is.null`);
+            .eq('user_id', user.id);
 
           if (cError) throw cError;
+
           
           if (categories && categories.length > 0) {
             const mappedCategories = categories.map((c: any) => ({
@@ -387,10 +576,48 @@ export const useStore = create<AppState>()(
             set({ transactions: mappedTransactions });
           }
 
-        } catch (error) {
+          // 4. Fetch Loans
+          const { data: loans, error: lError } = await supabase.from('loans').select('*').eq('user_id', user.id);
+          if (!lError && loans) {
+            const mappedLoans = loans.map((l: any) => ({
+              id: l.id,
+              type: l.type,
+              personName: l.person_name,
+              amount: l.amount,
+              remainingAmount: l.remaining_amount,
+              interestRate: l.interest_rate,
+              dueDate: l.due_date,
+              date: l.date,
+              note: l.note,
+              walletId: l.wallet_id,
+              status: l.status
+            }));
+            set({ loans: mappedLoans });
+          }
+
+          // 5. Fetch Loan Payments
+          const { data: payments, error: lpError } = await supabase.from('loan_payments').select('*').eq('user_id', user.id);
+          if (!lpError && payments) {
+             const mappedPayments = payments.map((p: any) => ({
+               id: p.id,
+               loanId: p.loan_id,
+               amount: p.amount,
+               date: p.date,
+               walletId: p.wallet_id,
+               note: p.note
+             }));
+             set({ loanPayments: mappedPayments });
+          }
+
+        } catch (error: any) {
           console.error('Initial data fetch error:', error);
+          if (error?.status === 401 || error?.message?.includes('Unauthorized')) {
+            console.warn('Session unauthorized. Logging out.');
+            useStore.getState().logout();
+          }
         }
       },
+
 
 
     }),

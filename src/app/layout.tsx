@@ -26,6 +26,7 @@ export default function RootLayout({
   const { login, logout } = useStore();
 
   useEffect(() => {
+    document.title = "Trackify - Personal Finance Tracker";
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         login({
@@ -34,7 +35,10 @@ export default function RootLayout({
           name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
         });
       } else if (event === 'SIGNED_OUT') {
-        logout();
+        const currentUser = useStore.getState().user;
+        if (currentUser) {
+          logout();
+        }
       }
     });
 

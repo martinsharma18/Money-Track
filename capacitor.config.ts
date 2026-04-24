@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.moneytrack.app',
-  appName: 'Money Track',
+  appName: 'Trackify',
   webDir: 'out',
   server: {
     androidScheme: 'https'

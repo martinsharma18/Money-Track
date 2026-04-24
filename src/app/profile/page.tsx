@@ -1,6 +1,7 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
+import { useRouter } from "next/navigation";
 import { User, LogOut, Settings, Wallet, Tag, X, Trash2, Edit3, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/utils/cn";
@@ -22,9 +23,17 @@ export default function ProfilePage() {
 
   if (!hasHydrated || !user) return null;
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Logged out");
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Logged out");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      router.replace("/login");
+    }
   };
 
   const handleDisplayToggle = (view: 'BS' | 'AD') => {
@@ -99,7 +108,7 @@ export default function ProfilePage() {
           </button>
 
           <button onClick={handleLogout} className="p-2 bg-red-50 dark:bg-red-950/20 text-red-500 rounded-lg transition-all active:scale-95 border border-red-100 dark:border-red-900/30">
-            <LogOut size={14} />
+            <LogOut size={20} />
           </button>
         </div>
       </div>

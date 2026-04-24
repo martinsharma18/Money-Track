@@ -68,11 +68,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm relative z-10 space-y-8 animate-fade-in">
         {/* Logo Section */}
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto shadow-2xl shadow-primary/30 rotate-3">
-            <Wallet className="text-white" size={32} />
+          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-slate-200/50 rotate-3 overflow-hidden p-2 border border-slate-100">
+            <img src="/applogo.png" alt="Trackify Logo" className="w-full h-full object-contain" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Financial Hub</h1>
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Trackify</h1>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Track every penny precisely</p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
 
           <div className="mt-8 text-center">
             <p className="text-xs font-bold text-slate-400">
-              New to Financial Hub?{" "}
+              New to Trackify?{" "}
               <Link href="/register" className="text-primary hover:underline underline-offset-4">Create Account</Link>
             </p>
           </div>

@@ -166,8 +166,8 @@ export const useStore = create<AppState>()(
         set((state) => {
           const updatedWallets = state.wallets.map(w => {
             if (w.id === transaction.walletId) {
-              const amountChange = transaction.type === 'INCOME' ? transaction.amount : -transaction.amount;
-              return { ...w, balance: w.balance + amountChange };
+              const amountChange = transaction.type === 'INCOME' ? Number(transaction.amount) : -Number(transaction.amount);
+              return { ...w, balance: Number(w.balance) + amountChange };
             }
             return w;
           });
@@ -208,59 +208,61 @@ export const useStore = create<AppState>()(
       },
 
       updateTransaction: async (id, data) => {
+        let oldTx: any = null;
+        let newTx: any = null;
+        let affectedWalletIds: string[] = [];
+
         // Optimistic UI Update
         set((state) => {
-          const oldTransaction = state.transactions.find(t => t.id === id);
-          if (!oldTransaction) return state;
+          oldTx = state.transactions.find(t => t.id === id);
+          if (!oldTx) return state;
 
-          const updatedTransaction = { ...oldTransaction, ...data };
+          newTx = { ...oldTx, ...data };
+          affectedWalletIds = Array.from(new Set([oldTx.walletId, newTx.walletId]));
           
           let updatedWallets = state.wallets.map(w => {
-             if (w.id === oldTransaction.walletId) {
-               const amountChange = oldTransaction.type === 'INCOME' ? -oldTransaction.amount : oldTransaction.amount;
-               return { ...w, balance: w.balance + amountChange };
+             // 1. Revert old impact
+             if (w.id === oldTx.walletId) {
+               const revertAmount = oldTx.type === 'INCOME' ? -Number(oldTx.amount) : Number(oldTx.amount);
+               w = { ...w, balance: Number(w.balance) + revertAmount };
              }
-             return w;
-          });
-
-          updatedWallets = updatedWallets.map(w => {
-             if (w.id === updatedTransaction.walletId) {
-               const amountChange = updatedTransaction.type === 'INCOME' ? updatedTransaction.amount : -updatedTransaction.amount;
-               return { ...w, balance: w.balance + amountChange };
+             // 2. Apply new impact (using the potentially updated wallet from step 1)
+             if (w.id === newTx.walletId) {
+               const applyAmount = newTx.type === 'INCOME' ? Number(newTx.amount) : -Number(newTx.amount);
+               w = { ...w, balance: Number(w.balance) + applyAmount };
              }
              return w;
           });
 
           return {
-            transactions: state.transactions.map(t => t.id === id ? updatedTransaction as any : t),
+            transactions: state.transactions.map(t => t.id === id ? newTx : t),
             wallets: updatedWallets
           };
         });
 
         // Supabase Sync
         try {
-          const { user, transactions, wallets } = useStore.getState();
-          if (!user) return;
+          const { user, wallets } = useStore.getState();
+          if (!user || !newTx) return;
           
-          const updatedTx = transactions.find(t => t.id === id);
-          if (updatedTx) {
-             // We do separate update/delete in DB
-             const { error } = await supabase.from('transactions').update({
-               type: updatedTx.type,
-               amount: updatedTx.amount,
-               category_id: updatedTx.categoryId,
-               wallet_id: updatedTx.walletId,
-               note: updatedTx.note,
-               date: updatedTx.date
-             }).eq('id', id);
-             
-             if (error) throw error;
+          // Update Transaction
+          const { error } = await supabase.from('transactions').update({
+            type: newTx.type,
+            amount: newTx.amount,
+            category_id: newTx.categoryId,
+            wallet_id: newTx.walletId,
+            note: newTx.note,
+            date: newTx.date
+          }).eq('id', id);
+          
+          if (error) throw error;
 
-             // Only sync the wallets that changed
-             // It's safer to just sync all of them since we might have moved from one to another
-             for (const w of wallets) {
-               await supabase.from('wallets').update({ balance: w.balance }).eq('id', w.id);
-             }
+          // Sync only affected wallets
+          for (const walletId of affectedWalletIds) {
+            const wallet = wallets.find(w => w.id === walletId);
+            if (wallet) {
+              await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+            }
           }
         } catch (error) {
           console.error('Error updating transaction in DB:', error);
@@ -269,15 +271,17 @@ export const useStore = create<AppState>()(
       },
 
       deleteTransaction: async (id) => {
+        let deletedTx: any = null;
+
         // Optimistic UI Update
         set((state) => {
-          const transaction = state.transactions.find(t => t.id === id);
-          if (!transaction) return state;
+          deletedTx = state.transactions.find(t => t.id === id);
+          if (!deletedTx) return state;
 
           const updatedWallets = state.wallets.map(w => {
-             if (w.id === transaction.walletId) {
-               const amountChange = transaction.type === 'INCOME' ? -transaction.amount : transaction.amount;
-               return { ...w, balance: w.balance + amountChange };
+             if (w.id === deletedTx.walletId) {
+               const revertAmount = deletedTx.type === 'INCOME' ? -Number(deletedTx.amount) : Number(deletedTx.amount);
+               return { ...w, balance: Number(w.balance) + revertAmount };
              }
              return w;
           });
@@ -291,14 +295,15 @@ export const useStore = create<AppState>()(
         // Supabase Sync
         try {
           const { user, wallets } = useStore.getState();
-          if (!user) return;
+          if (!user || !deletedTx) return;
 
           const { error } = await supabase.from('transactions').delete().eq('id', id);
           if (error) throw error;
           
-          // Re-sync all wallets just to be safe
-          for (const w of wallets) {
-             await supabase.from('wallets').update({ balance: w.balance }).eq('id', w.id);
+          // Sync affected wallet
+          const wallet = wallets.find(w => w.id === deletedTx.walletId);
+          if (wallet) {
+            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
           }
         } catch (error) {
           console.error('Error deleting transaction in DB:', error);
@@ -316,8 +321,8 @@ export const useStore = create<AppState>()(
         set((state) => {
           const updatedWallets = state.wallets.map(w => {
             if (w.id === loan.walletId) {
-              const amountChange = loan.type === 'BORROWED' ? loan.amount : -loan.amount;
-              return { ...w, balance: w.balance + amountChange };
+              const amountChange = loan.type === 'BORROWED' ? Number(loan.amount) : -Number(loan.amount);
+              return { ...w, balance: Number(w.balance) + amountChange };
             }
             return w;
           });
@@ -356,11 +361,41 @@ export const useStore = create<AppState>()(
       },
 
       updateLoan: async (id, data) => {
-        set((state) => ({
-          loans: state.loans.map(l => l.id === id ? { ...l, ...data } : l)
-        }));
+        let oldLoan: any = null;
+        let newLoan: any = null;
+        let affectedWalletIds: string[] = [];
+
+        set((state) => {
+          oldLoan = state.loans.find(l => l.id === id);
+          if (!oldLoan) return state;
+
+          newLoan = { ...oldLoan, ...data };
+          affectedWalletIds = Array.from(new Set([oldLoan.walletId, newLoan.walletId]));
+
+          const updatedWallets = state.wallets.map(w => {
+            // 1. Revert old impact
+            if (w.id === oldLoan.walletId) {
+              const revertAmount = oldLoan.type === 'BORROWED' ? -Number(oldLoan.amount) : Number(oldLoan.amount);
+              w = { ...w, balance: Number(w.balance) + revertAmount };
+            }
+            // 2. Apply new impact
+            if (w.id === newLoan.walletId) {
+              const applyAmount = newLoan.type === 'BORROWED' ? Number(newLoan.amount) : -Number(newLoan.amount);
+              w = { ...w, balance: Number(w.balance) + applyAmount };
+            }
+            return w;
+          });
+
+          return {
+            loans: state.loans.map(l => l.id === id ? newLoan : l),
+            wallets: updatedWallets
+          };
+        });
 
         try {
+          const { user, wallets } = useStore.getState();
+          if (!user || !newLoan) return;
+
           const dbData: any = { ...data };
           if (data.personName) { dbData.person_name = data.personName; delete dbData.personName; }
           if (data.walletId) { dbData.wallet_id = data.walletId; delete dbData.walletId; }
@@ -369,16 +404,53 @@ export const useStore = create<AppState>()(
           if (data.dueDate !== undefined) { dbData.due_date = data.dueDate; delete dbData.dueDate; }
           
           await supabase.from('loans').update(dbData).eq('id', id);
+
+          // Sync affected wallets
+          for (const walletId of affectedWalletIds) {
+            const wallet = wallets.find(w => w.id === walletId);
+            if (wallet) {
+              await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+            }
+          }
         } catch (error) {
           console.error('Error updating loan:', error);
         }
       },
 
       deleteLoan: async (id) => {
-        set((state) => ({
-          loans: state.loans.filter(l => l.id !== id)
-        }));
-        await supabase.from('loans').delete().eq('id', id);
+        let deletedLoan: any = null;
+
+        set((state) => {
+          deletedLoan = state.loans.find(l => l.id === id);
+          if (!deletedLoan) return state;
+
+          const updatedWallets = state.wallets.map(w => {
+            if (w.id === deletedLoan.walletId) {
+              const revertAmount = deletedLoan.type === 'BORROWED' ? -Number(deletedLoan.amount) : Number(deletedLoan.amount);
+              return { ...w, balance: Number(w.balance) + revertAmount };
+            }
+            return w;
+          });
+
+          return {
+            loans: state.loans.filter(l => l.id !== id),
+            wallets: updatedWallets
+          };
+        });
+
+        try {
+          const { user, wallets } = useStore.getState();
+          if (!user || !deletedLoan) return;
+
+          await supabase.from('loans').delete().eq('id', id);
+          
+          const wallet = wallets.find(w => w.id === deletedLoan.walletId);
+          if (wallet) {
+            await supabase.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+          }
+        } catch (error) {
+          console.error('Error deleting loan:', error);
+        }
       },
 
       addLoanPayment: async (payment) => {
@@ -392,7 +464,7 @@ export const useStore = create<AppState>()(
           const loan = state.loans.find(l => l.id === payment.loanId);
           if (!loan) return state;
 
-          const newRemaining = loan.remainingAmount - payment.amount;
+          const newRemaining = Number(loan.remainingAmount) - Number(payment.amount);
           const newStatus = newRemaining <= 0 ? 'PAID' : 'ACTIVE';
 
           const updatedLoans = state.loans.map(l => 
@@ -403,8 +475,8 @@ export const useStore = create<AppState>()(
             if (w.id === payment.walletId) {
               // If we BORROWED, paying back is an EXPENSE (-balance)
               // If we LENT, getting paid back is INCOME (+balance)
-              const amountChange = loan.type === 'BORROWED' ? -payment.amount : payment.amount;
-              return { ...w, balance: w.balance + amountChange };
+              const amountChange = loan.type === 'BORROWED' ? -Number(payment.amount) : Number(payment.amount);
+              return { ...w, balance: Number(w.balance) + amountChange };
             }
             return w;
           });
@@ -454,7 +526,7 @@ export const useStore = create<AppState>()(
           const loan = state.loans.find(l => l.id === payment.loanId);
           if (!loan) return state;
 
-          const newRemaining = loan.remainingAmount + payment.amount;
+          const newRemaining = Number(loan.remainingAmount) + Number(payment.amount);
           const newStatus = newRemaining <= 0 ? 'PAID' : 'ACTIVE';
 
           const updatedLoans = state.loans.map(l => 
@@ -463,8 +535,8 @@ export const useStore = create<AppState>()(
 
           const updatedWallets = state.wallets.map(w => {
             if (w.id === payment.walletId) {
-              const amountChange = loan.type === 'BORROWED' ? payment.amount : -payment.amount;
-              return { ...w, balance: w.balance + amountChange };
+              const amountChange = loan.type === 'BORROWED' ? Number(payment.amount) : -Number(payment.amount);
+              return { ...w, balance: Number(w.balance) + amountChange };
             }
             return w;
           });
@@ -549,7 +621,11 @@ export const useStore = create<AppState>()(
           if (wError) throw wError;
 
           if (wallets && wallets.length > 0) {
-            set({ wallets });
+            const mappedWallets = wallets.map((w: any) => ({
+              ...w,
+              balance: Number(w.balance)
+            }));
+            set({ wallets: mappedWallets });
           } else {
             const initialWallets = defaultWallets.map(w => ({
               ...w,
@@ -567,7 +643,7 @@ export const useStore = create<AppState>()(
             const mappedTransactions = transactions.map((t: any) => ({
                 id: t.id,
                 type: t.type,
-                amount: t.amount,
+                amount: Number(t.amount),
                 note: t.note,
                 date: t.date,
                 categoryId: t.category_id || t.categoryId, // Fallback if API hasn't changed
@@ -583,8 +659,8 @@ export const useStore = create<AppState>()(
               id: l.id,
               type: l.type,
               personName: l.person_name,
-              amount: l.amount,
-              remainingAmount: l.remaining_amount,
+              amount: Number(l.amount),
+              remainingAmount: Number(l.remaining_amount),
               interestRate: l.interest_rate,
               dueDate: l.due_date,
               date: l.date,
@@ -601,7 +677,7 @@ export const useStore = create<AppState>()(
              const mappedPayments = payments.map((p: any) => ({
                id: p.id,
                loanId: p.loan_id,
-               amount: p.amount,
+               amount: Number(p.amount),
                date: p.date,
                walletId: p.wallet_id,
                note: p.note

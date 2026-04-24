@@ -13,7 +13,8 @@ import { formatDisplayDate } from '@/utils/date';
 export default function LoansPage() {
   const { loans, loanPayments, wallets, addLoan, addLoanPayment, deleteLoan, deleteLoanPayment } = useStore();
   const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [editingLoanId, setEditingLoanId] = useState<string | null>(null);
+  const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -88,6 +89,7 @@ export default function LoansPage() {
               <LoanCard 
                 key={loan.id} 
                 loan={loan} 
+                onEdit={() => { setEditingLoanId(loan.id); setIsAddLoanOpen(true); }}
                 onAddPayment={() => { setSelectedLoanId(loan.id); setIsPaymentOpen(true); }}
                 onDelete={() => setDeleteConfirmId(loan.id)}
               />
@@ -102,6 +104,7 @@ export default function LoansPage() {
                   <LoanCard 
                     key={loan.id} 
                     loan={loan} 
+                    onEdit={() => { setEditingLoanId(loan.id); setIsAddLoanOpen(true); }}
                     onDelete={() => setDeleteConfirmId(loan.id)}
                   />
                 ))}
@@ -113,7 +116,10 @@ export default function LoansPage() {
 
       {/* Add Loan Modal/Sheet */}
       {isAddLoanOpen && (
-        <AddLoanSheet onClose={() => setIsAddLoanOpen(false)} />
+        <AddLoanSheet 
+          onClose={() => { setIsAddLoanOpen(false); setEditingLoanId(null); }} 
+          loanId={editingLoanId || undefined}
+        />
       )}
 
       {/* Payment Modal/Sheet */}
@@ -136,7 +142,7 @@ export default function LoansPage() {
   );
 }
 
-function LoanCard({ loan, onAddPayment, onDelete }: { loan: any, onAddPayment?: () => void, onDelete: () => void }) {
+function LoanCard({ loan, onEdit, onAddPayment, onDelete }: { loan: any, onEdit: () => void, onAddPayment?: () => void, onDelete: () => void }) {
   const { settings } = useStore();
   const isLent = loan.type === 'LENT';
   const progress = ((loan.amount - loan.remainingAmount) / loan.amount) * 100;
@@ -170,6 +176,13 @@ function LoanCard({ loan, onAddPayment, onDelete }: { loan: any, onAddPayment?: 
               <CheckCircle2 size={18} />
             </button>
           )}
+          <button 
+            onClick={onEdit}
+            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+            title="Edit Loan"
+          >
+            <MoreVertical size={18} />
+          </button>
           <button 
             onClick={onDelete}
             className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-lg transition-colors"
@@ -213,16 +226,18 @@ function LoanCard({ loan, onAddPayment, onDelete }: { loan: any, onAddPayment?: 
   );
 }
 
-function AddLoanSheet({ onClose }: { onClose: () => void }) {
-  const { wallets, addLoan } = useStore();
+function AddLoanSheet({ onClose, loanId }: { onClose: () => void, loanId?: string }) {
+  const { loans, wallets, addLoan, updateLoan } = useStore();
+  const editingLoan = loanId ? loans.find(l => l.id === loanId) : null;
+
   const [formData, setFormData] = useState({
-    personName: '',
-    amount: '',
-    type: 'BORROWED' as 'LENT' | 'BORROWED',
-    walletId: wallets[0]?.id || '',
-    note: '',
-    date: new Date().toISOString().split('T')[0],
-    dueDate: '',
+    personName: editingLoan?.personName || '',
+    amount: editingLoan?.amount.toString() || '',
+    type: editingLoan?.type || 'BORROWED' as 'LENT' | 'BORROWED',
+    walletId: editingLoan?.walletId || wallets[0]?.id || '',
+    note: editingLoan?.note || '',
+    date: (editingLoan?.date || new Date().toISOString()).split('T')[0],
+    dueDate: (editingLoan?.dueDate || '').split('T')[0],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -232,17 +247,30 @@ function AddLoanSheet({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    addLoan({
-      personName: formData.personName,
-      amount: parseFloat(formData.amount),
-      type: formData.type,
-      walletId: formData.walletId,
-      note: formData.note,
-      date: new Date(formData.date).toISOString(),
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
-    });
-
-    toast.success("Loan added");
+    if (editingLoan) {
+      updateLoan(editingLoan.id, {
+        personName: formData.personName,
+        amount: parseFloat(formData.amount),
+        remainingAmount: parseFloat(formData.amount) - (editingLoan.amount - editingLoan.remainingAmount), // Keep paid progress
+        type: formData.type,
+        walletId: formData.walletId,
+        note: formData.note,
+        date: new Date(formData.date).toISOString(),
+        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+      });
+      toast.success("Loan updated");
+    } else {
+      addLoan({
+        personName: formData.personName,
+        amount: parseFloat(formData.amount),
+        type: formData.type,
+        walletId: formData.walletId,
+        note: formData.note,
+        date: new Date(formData.date).toISOString(),
+        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+      });
+      toast.success("Loan added");
+    }
     onClose();
   };
 
@@ -250,7 +278,7 @@ function AddLoanSheet({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add New Loan/Debt</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{editingLoan ? 'Edit Loan' : 'Add New Loan/Debt'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
             <Plus className="rotate-45" size={24} />
           </button>

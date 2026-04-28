@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { formatDisplayDate } from "@/utils/date";
 import { usePeriodView } from "@/hooks/usePeriodView";
-import { Wallet, Search, Calendar as CalendarIcon, User, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, X } from "lucide-react";
+import { Wallet, Search, Calendar as CalendarIcon, User, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, X, Bell } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
@@ -68,6 +68,10 @@ export default function GlobalHeader() {
           </div>
 
           <div className="flex items-center gap-1.5">
+            <button className="p-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95 relative">
+              <Bell size={16} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-white/20 animate-pulse"></span>
+            </button>
             <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95">
               <Search size={16} />
             </button>

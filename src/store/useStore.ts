@@ -172,7 +172,7 @@ export const useStore = create<AppState>()(
             return w;
           });
           return {
-            transactions: [...state.transactions, newTransaction as any],
+            transactions: [newTransaction as any, ...state.transactions],
             wallets: updatedWallets
           };
         });
@@ -639,6 +639,7 @@ export const useStore = create<AppState>()(
           // 3. Fetch Transactions mapping snake_case from DB to camelCase UI
           const { data: transactions, error: tError } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('date', { ascending: false });
           if (tError) throw tError;
+
           if (transactions) {
             const mappedTransactions = transactions.map((t: any) => ({
                 id: t.id,

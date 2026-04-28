@@ -241,6 +241,16 @@ export default function AddTransactionSheet() {
     } else {
       addTransaction(txData);
       toast.success('Added');
+      
+      // Auto-scroll to top to see the newly added transaction
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also target the main scroll container for desktop view
+        const mainContent = document.querySelector('main');
+        if (mainContent) {
+          mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
     }
     
     onClose();
